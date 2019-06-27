@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 #!/usr/bin/python
 # -*- coding: utf8 -*-
+=======
+>>>>>>> 6f23ac3 (WSAA: Agrego cryptography en metodo AnalizarCertificado #Pyar#15)
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by the
 # Free Software Foundation; either version 3, or (at your option) any later
@@ -22,6 +25,7 @@ from builtins import input
 from builtins import str
 
 __author__ = "Mariano Reingart (reingart@gmail.com)"
+<<<<<<< HEAD
 __copyright__ = "Copyright (C) 2008-2021 Mariano Reingart"
 __license__ = "LGPL-3.0-or-later"
 __version__ = "3.11c"
@@ -38,6 +42,24 @@ from .utils import (
     safe_console,
     date,
 )
+=======
+__copyright__ = "Copyright (C) 2008-2019 Mariano Reingart"
+__license__ = "GPL 3.0"
+__version__ = "2.11c"
+
+import hashlib
+import datetime
+import email
+import os
+import sys
+import time
+import traceback
+import warnings
+import unicodedata
+from pysimplesoap.client import SimpleXMLElement
+from .utils import (inicializar_y_capturar_excepciones, BaseWS, get_install_dir,
+                    exception_info, safe_console, date)
+>>>>>>> 6f23ac3 (WSAA: Agrego cryptography en metodo AnalizarCertificado #Pyar#15)
 
 try:
     from M2Crypto import BIO, Rand, SMIME, SSL
@@ -85,10 +107,17 @@ def create_tra(service=SERVICE, ttl=2400):
     # El source es opcional. Si falta, toma la firma (recomendado).
     # tra.header.addChild('source','subject=...')
     # tra.header.addChild('destination','cn=wsaahomo,o=afip,c=ar,serialNumber=CUIT 33693450239')
+<<<<<<< HEAD
     tra.header.add_child("uniqueId", str(date("U")))
     tra.header.add_child("generationTime", str(date("c", date("U") - ttl)))
     tra.header.add_child("expirationTime", str(date("c", date("U") + ttl)))
     tra.add_child("service", service)
+=======
+    tra.header.add_child('uniqueId', str(date('U')))
+    tra.header.add_child('generationTime', str(date('c', date('U') - ttl)))
+    tra.header.add_child('expirationTime', str(date('c', date('U') + ttl)))
+    tra.add_child('service', service)
+>>>>>>> 6f23ac3 (WSAA: Agrego cryptography en metodo AnalizarCertificado #Pyar#15)
     return tra.as_xml()
 
 
@@ -97,9 +126,15 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
 
     if BIO:
         # Firmar el texto (tra) usando m2crypto (openssl bindings para python)
+<<<<<<< HEAD
         buf = BIO.MemoryBuffer(tra.encode("utf8"))  # Crear un buffer desde el texto
         # Rand.load_file('randpool.dat', -1)     # Alimentar el PRNG
         s = SMIME.SMIME()  # Instanciar un SMIME
+=======
+        buf = BIO.MemoryBuffer(tra)             # Crear un buffer desde el texto
+        # Rand.load_file('randpool.dat', -1)     # Alimentar el PRNG
+        s = SMIME.SMIME()                       # Instanciar un SMIME
+>>>>>>> 6f23ac3 (WSAA: Agrego cryptography en metodo AnalizarCertificado #Pyar#15)
         # soporte de contraseña de encriptación (clave privada, opcional)
         callback = lambda *args, **kwarg: passphrase
         # Cargar clave privada y certificado
@@ -133,6 +168,7 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
     else:
         # Firmar el texto (tra) usando OPENSSL directamente
         try:
+<<<<<<< HEAD
             out = Popen(
                 [
                     openssl_exe(),
@@ -151,6 +187,45 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
                 stderr=PIPE,
             ).communicate(tra.encode("utf8"))[0]
             return b64encode(out)
+=======
+            if sys.platform.startswith("linux"):
+                openssl = "openssl"
+            else:
+                if sys.maxsize <= 2**32:
+                    openssl = r"c:\OpenSSL-Win32\bin\openssl.exe"
+                else:
+                    openssl = r"c:\OpenSSL-Win64\bin\openssl.exe"
+            # NOTE: workaround if certificate is not already stored in a file
+            # SECURITY WARNING: the private key will be exposed a bit in /tmp
+            #                   (in theory only for the current user)
+            if cert.startswith("-----BEGIN CERTIFICATE-----"):
+                cert_f = NamedTemporaryFile()
+                cert_f.write(cert.encode('utf-8'))
+                cert_f.flush()
+                cert = cert_f.name
+            else:
+                cert_f = None
+            if privatekey.startswith("-----BEGIN RSA PRIVATE KEY-----"):
+                key_f = NamedTemporaryFile()
+                key_f.write(privatekey.encode('utf-8'))
+                key_f.flush()
+                privatekey = key_f.name
+            else:
+                key_f = None
+            try:
+                out = Popen([openssl, "smime", "-sign",
+                             "-signer", cert, "-inkey", privatekey,
+                             "-outform", "DER", "-nodetach"],
+                            stdin=PIPE, stdout=PIPE,
+                            stderr=PIPE).communicate(tra)[0]
+            finally:
+                # close temp files to delete them (just in case):
+                if cert_f:
+                    cert_f.close()
+                if key_f:
+                    key_f.close()
+            return b64encode(out).decode("utf8")
+>>>>>>> 6f23ac3 (WSAA: Agrego cryptography en metodo AnalizarCertificado #Pyar#15)
         except OSError as e:
             if e.errno == 2:
                 warnings.warn("El ejecutable de OpenSSL no esta disponible en el PATH")
@@ -245,6 +320,7 @@ class WSAA(BaseWS):
     @inicializar_y_capturar_excepciones
     def AnalizarCertificado(self, crt, binary=False):
         "Carga un certificado digital y extrae los campos más importantes"
+<<<<<<< HEAD
         from M2Crypto import BIO, EVP, RSA, X509
 
         if binary:
@@ -260,6 +336,24 @@ class WSAA(BaseWS):
             self.Caducidad = x509.get_not_after().get_datetime()
             self.Emisor = x509.get_issuer().as_text()
             self.CertX509 = x509.as_text()
+=======
+        from cryptography import x509
+        from cryptography.hazmat.backends import default_backend
+
+        if binary:
+            cert = x509.load_pem_x509_certificate(crt, default_backend())
+        else:
+            if not crt.startswith("-----BEGIN CERTIFICATE-----"):
+                crt = open(crt).read()
+                if isinstance(crt, str):
+                    crt = crt.encode('utf-8')
+            cert = x509.load_pem_x509_certificate(crt, default_backend())
+        if cert:
+            self.Identidad = cert.subject
+            self.Caducidad = cert.not_valid_after
+            self.Emisor = cert.issuer
+            self.CertX509 = cert
+>>>>>>> 6f23ac3 (WSAA: Agrego cryptography en metodo AnalizarCertificado #Pyar#15)
         return True
 
     @inicializar_y_capturar_excepciones
@@ -409,7 +503,7 @@ class WSAA(BaseWS):
                 tra = self.CreateTRA(service=service, ttl=DEFAULT_TTL)
                 # firmarlo criptográficamente
                 if DEBUG:
-                    print("Frimando TRA...")
+                    print("Firmando TRA...")
                 cms = self.SignTRA(tra, crt, key)
                 # concectar con el servicio web:
                 if DEBUG:
@@ -590,5 +684,8 @@ if __name__ == "__main__":
             print("Generation Time:", wsaa.ObtenerTagXml("generationTime"))
             print("Expiration Time:", wsaa.ObtenerTagXml("expirationTime"))
             print("Expiro?", wsaa.Expirado())
+<<<<<<< HEAD
             ##import time; time.sleep(10)
             ##print "Expiro?", wsaa.Expirado()
+=======
+>>>>>>> 6f23ac3 (WSAA: Agrego cryptography en metodo AnalizarCertificado #Pyar#15)
