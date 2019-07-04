@@ -378,8 +378,7 @@ def main():
         print("=== Tipo Documentos ===")
         print('\n'.join(wscdc.ConsultarTipoDocumentos("||")))
         print("=== Tipo Opcionales ===")
-        print('\n'.join(wscdc.ConsultarTipoOpcionales("||")))
-        print("Mensaje de Error:", wscdc.ErrMsg)
+
 
 
 if __name__ == "__main__":
