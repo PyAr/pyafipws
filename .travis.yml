@@ -1,3 +1,4 @@
+dist: xenial   # required for Python >= 3.7
 languaje: python
 
 python:
@@ -5,3 +6,6 @@ python:
       - "3.6"
       - "3.7"
       - "3.8-dev"
+install:
+      - "pip install -r requirements.txt"
+script: pytest
