@@ -24,8 +24,8 @@ from pyafipws.wsbfev1 import WSBFEv1
 
 WSDL = "https://wswhomo.afip.gov.ar/wsbfev1/service.asmx?WSDL"
 CUIT = 20267565393
-CERT = "/pyafipws/reingart.crt"
-PRIVATEKEY = "/pyafipws/reingart.key"
+CERT = "/pyafipws/aid/reingart.crt"
+PRIVATEKEY = "/pyafipws/aid/reingart.key"
 CACERT = "/pyafipws/afip_root_desa_ca.crt"
 CACHE = "/pyafipws/cache"
 
@@ -38,7 +38,7 @@ CACHE = "/pyafipws/cache"
 
 # obteniendo el TA para pruebas
 
-ta = WSAA().Autenticar("wsbfe", "reingart.crt", "reingart.key")
+ta = WSAA().Autenticar("wsbfe", CERT, PRIVATEKEY)
 print(ta)
 
 
