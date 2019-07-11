@@ -24,8 +24,8 @@ from pyafipws.wsbfev1 import WSBFEv1
 
 WSDL = "https://wswhomo.afip.gov.ar/wsbfev1/service.asmx?WSDL"
 CUIT = 20267565393
-CERT = "/pyafipws/aid/reingart.crt"
-PRIVATEKEY = "/pyafipws/aid/reingart.key"
+CERT = "reingart.crt"
+PRIVATEKEY = "reingart.key"
 CACERT = "/pyafipws/afip_root_desa_ca.crt"
 CACHE = "/pyafipws/cache"
 
