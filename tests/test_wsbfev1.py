@@ -24,10 +24,10 @@ from pyafipws.wsbfev1 import WSBFEv1
 
 WSDL = "https://wswhomo.afip.gov.ar/wsbfev1/service.asmx?WSDL"
 CUIT = 20267565393
-CERT = "/home/travis/pyafipws/tests/reingart.crt"
-PRIVATEKEY = "/home/travis/pyafipws/tests/reingart.key"
+CERT = "/home/travis/build/pyafipws/tests/reingart.crt"
+PRIVATEKEY = "/home/travis/build/pyafipws/tests/reingart.key"
 CACERT = "/pyafipws/afip_root_desa_ca.crt"
-CACHE = "/home/travis/pyafipws/cache"
+CACHE = "/home/travis/build/pyafipws/cache"
 
 # Debido a que Python solicita una opción de diseño, hay una advertencia
 # sobre una conexión no cerrada al ejecutar las pruebas.
