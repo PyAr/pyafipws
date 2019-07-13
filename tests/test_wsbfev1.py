@@ -16,6 +16,7 @@ __license__ = "GPL 3.0"
 
 import unittest
 import sys
+import os
 from datetime import datetime, timedelta
 
 from pyafipws.wsaa import WSAA
@@ -24,8 +25,8 @@ from pyafipws.wsbfev1 import WSBFEv1
 
 WSDL = "https://wswhomo.afip.gov.ar/wsbfev1/service.asmx?WSDL"
 CUIT = 20267565393
-CERT = "/home/travis/build/pyafipws/tests/reingart.crt"
-PRIVATEKEY = "/home/travis/build/pyafipws/tests/reingart.key"
+CERT = os.environ.get('CERT')
+PRIVATEKEY = os.environ.get('PRIVATE_KEY')
 CACERT = "/pyafipws/afip_root_desa_ca.crt"
 CACHE = "/home/travis/build/pyafipws/cache"
 
