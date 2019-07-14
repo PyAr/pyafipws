@@ -8,7 +8,13 @@ python:
       - "3.8-dev"
 install:
       - "python setup.py -q install"
-script: pytest
+
+env:
+  - cert=$CERT
+  - pkey=$PKEY
+
+script:
+  - pytest
 
 branches:
   only:
