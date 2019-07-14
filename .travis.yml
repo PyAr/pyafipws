@@ -10,8 +10,8 @@ install:
       - "python setup.py -q install"
 
 env:
-  - "CERT=$CERT"
-  - "PKEY=$PKEY"
+  - CERT=$CERT
+  - PKEY=$PKEY
 
 script:
   - pytest
