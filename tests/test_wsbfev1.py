@@ -25,8 +25,8 @@ from pyafipws.wsbfev1 import WSBFEv1
 
 WSDL = "https://wswhomo.afip.gov.ar/wsbfev1/service.asmx?WSDL"
 CUIT = 20267565393
-CERT = os.environ["cert"].replace(r"\n", "\n")
-PRIVATEKEY = os.environ["pkey"].replace(r"\n", "\n")
+CERT = os.environ["CERT"].replace(r"\n", "\n")
+PRIVATEKEY = os.environ["PKEY"].replace(r"\n", "\n")
 CACERT = "/pyafipws/afip_root_desa_ca.crt"
 CACHE = "/home/travis/build/pyafipws/cache"
 
