@@ -9,9 +9,7 @@ python:
 install:
       - "python setup.py -q install"
 
-env:
-  - CERT=$CERT PKEY=$PKEY
-
+filter_secrets: false
 
 script:
   - pytest
