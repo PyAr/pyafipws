@@ -34,15 +34,9 @@ with open('rei.key', 'w', encoding='utf-8') as f:
     f.write(PKEY)
 
 
-ta = WSAA().Autenticar('wsfe', 'rei.crt', 'rei.key')
-
-cache = '/home/travis/build/NicolasSandoval/pyafipws/cache'
+tra = WSAA().CreateTRA()
 
 
-def test_cache(cache=cache):
-    assert os.path.exists(cache) == True
-
-
-def test_acces_ticket(ta=ta):
-   assert ta == 'X'
+def test_CreateTRA(tra=tra):
+    assert tra == None
 
