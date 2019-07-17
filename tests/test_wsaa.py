@@ -20,8 +20,8 @@ import os
 
 from pyafipws.wsaa import WSAA
 
-CERT = os.environ['CERT']
-PKEY = os.environ['PKEY']
+cert = os.environ['CERT']
+pkey = os.environ['PKEY']
 
 CERT = cert.replace(r'\n', '\n')
 PKEY = pkey.replace(r'\n', '\n')
