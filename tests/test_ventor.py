@@ -3,9 +3,10 @@ import os
 UNO = os.environ['UNO']
 DOS = os.environ['DOS']
 CERT = os.environ['CERT']
-# CERT = CERT.encode('utf-8')
+CERT = CERT.replace(r'\n', '\n')
 # PKEY = os.environ['PKEY']
 
+print(CERT)
 
 def test_environ(UNO=UNO, DOS=DOS):
     assert int(UNO) == 1
