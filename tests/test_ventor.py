@@ -7,11 +7,22 @@ CERT = CERT.replace(r'\n', '\n')
 PKEY = os.environ['PKEY']
 PKEY = PKEY.replace(r'\n', '\n')
 
-print(CERT)
+
+with open('rei.crt', 'w', encoding='utf-8') as f:
+    f.write(CERT)
+    
+with open('rei.key', 'w', encoding='utf-8') as f:
+    f.write(PKEY)
+
 
 def test_environ(UNO=UNO, DOS=DOS):
     assert int(UNO) == 1
     assert int(DOS) == 2
+
+
+def test_files_cert(cert='rei.crt', pkey='rei.key'):
+    assert os.path.exists(cert) == True
+    assert os.path.exists(pkey) == True
 
 
 def test_environ_crt(cert=CERT):
