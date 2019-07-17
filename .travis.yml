@@ -12,7 +12,7 @@ install:
 filter_secrets: false
 
 script:
-  - pytest
+  - pytest -v
 
 branches:
   only:
