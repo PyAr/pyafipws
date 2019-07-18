@@ -8,7 +8,8 @@ python:
       - "3.8-dev"
 
 before_install:
-  - timedatectl set-timezone America/Argentina/Buenos_Aires
+  - export TZ=America/Argentina/Buenos_Aires
+  - date
 
 install:
       - "python setup.py -q install"
