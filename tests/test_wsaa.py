@@ -37,6 +37,8 @@ with open('rei.key', 'w', encoding='utf-8') as f:
 wsaa = WSAA()
 tra = wsaa.CreateTRA()
 sign = wsaa.SignTRA(tra, 'rei.crt', 'rei.key')
+ok = wsaa.Conectar()
+ta = wsaa.LoginCMS(sign)
 
 
 def test_CreateTRA(tra=tra):
@@ -45,3 +47,11 @@ def test_CreateTRA(tra=tra):
 
 def test_SignTra(sign=sign):
     assert sign == None
+
+
+def test_Conectar(ok=ok):
+    assert ok == True
+
+
+def test_LoginCMS(ta=ta):
+    assert ta == True
