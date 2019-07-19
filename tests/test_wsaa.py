@@ -19,6 +19,7 @@ import sys
 import os
 
 from pyafipws.wsaa import WSAA
+from pyafipws.wsbfev1 import WSBFEv1
 
 cert = os.environ['CERT']
 pkey = os.environ['PKEY']
@@ -33,25 +34,32 @@ with open('rei.crt', 'w', encoding='utf-8') as f:
 with open('rei.key', 'w', encoding='utf-8') as f:
     f.write(PKEY)
 
+cuit = os.environ['CUIT']
+CACHE = ''
+WSDL = "https://wswhomo.afip.gov.ar/wsbfev1/service.asmx?WSDL"
 
+
+wsbfev1 = WSBFEv1()
 wsaa = WSAA()
-tra = wsaa.CreateTRA()
-sign = wsaa.SignTRA(tra, 'rei.crt', 'rei.key')
-ok = wsaa.Conectar()
-ta = wsaa.LoginCMS(sign)
+tax = wsaa.Autenticar('wsfe', 'rei.crt', 'rei.key')
+
+wsbfev1.Cuit = cuit
+wsbfev1.SetTicketAcceso(tax)
+wsbfev1.Conectar(CACHE, WSDL)
+wsbfev1.Dummy()
 
 
-def test_CreateTRA(tra=tra):
-    assert tra == None
+def test_autenticar(sign=tax):
+    assert isinstance(tax, str)
 
 
-def test_SignTra(sign=sign):
-    assert sign == None
+def test_app_server_status():
+    assert wsbfev1.AppServerStatus == 'OK'
 
 
-def test_Conectar(ok=ok):
-    assert ok == True
+def test_db_server_status():
+    assert wsbfev1.DbServerStatus == 'OK'
 
 
-def test_LoginCMS(ta=ta):
-    assert ta == True
+def test_Auth_server_status():
+    assert wsbfev1.AppServerStatus == 'OK'
