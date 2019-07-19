@@ -16,6 +16,7 @@ __license__ = "GPL 3.0"
 
 import unittest
 import sys
+import os
 import datetime
 
 from pyafipws.wsaa import WSAA
