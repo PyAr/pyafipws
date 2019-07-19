@@ -1,0 +1,21 @@
+dist: xenial   # required for Python >= 3.7
+language: python
+
+python:
+      - "3.7"
+
+filter_secrets: false
+
+before_install:
+  - export TZ=America/Argentina/Buenos_Aires
+  - date
+
+install:
+      - "python setup.py -q install"
+
+script:
+  - pytest -v
+
+branches:
+  only:
+    - gsoc
