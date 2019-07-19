@@ -22,12 +22,12 @@ from datetime import datetime, timedelta
 from pyafipws.wsaa import WSAA
 from pyafipws.wsbfev1 import WSBFEv1
 
+# Para utilizar variables de entorno en Travis 
 cert = os.environ['CERT']
 pkey = os.environ['PKEY']
 
 CERT = cert.replace(r'\n', '\n')
 PKEY = pkey.replace(r'\n', '\n')
-
 
 with open('rei.crt', 'w', encoding='utf-8') as f:
     f.write(CERT)
@@ -42,21 +42,17 @@ PRIVATEKEY = 'rei.key'
 CACHE = ""
 
 # obteniendo el TA para pruebas
-
-ta = WSAA().Autenticar("wsbfe", CERT, PRIVATEKEY)
-print(ta)
+ta = WSAA().Autenticar("wsbfe", "rei.crt", "rei.key")
 
 
 class TestBFE(unittest.TestCase):
     """Test para WSBFEv1 de AFIP(Bonos Fiscales electronicos v1.1)"""
 
     def setUp(self):
-        #sys.argv.append('--trace')
         self.wsbfev1 = wsbfev1 = WSBFEv1()
         wsbfev1.Cuit = CUIT
         wsbfev1.SetTicketAcceso(ta)
         wsbfev1.Conectar(CACHE, WSDL)
-        print(';)')
 
     def test_dummy(self):
         """Test de estado del servidor."""
