@@ -15,51 +15,73 @@ __copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
 __license__ = "GPL 3.0"
 
 
-import sys
-import os
-
 from pyafipws.wsaa import WSAA
-from pyafipws.wsbfev1 import WSBFEv1
+from pyafipws import wsaa as at
+
+try:
+    import M2Crypto as m2
+except ImportError:
+    m2 = None
+
+try:
+    import cryptography as crypt
+except ImportError:
+    crypt = None
 
 cert = os.environ['CERT']
 pkey = os.environ['PKEY']
-
 CERT = cert.replace(r'\n', '\n')
 PKEY = pkey.replace(r'\n', '\n')
 
-
 with open('rei.crt', 'w', encoding='utf-8') as f:
     f.write(CERT)
-    
+
 with open('rei.key', 'w', encoding='utf-8') as f:
     f.write(PKEY)
 
-cuit = os.environ['CUIT']
-CACHE = ''
-WSDL = "https://wswhomo.afip.gov.ar/wsbfev1/service.asmx?WSDL"
+CERT = 'rei.crt'
+PKEY = 'rei.key'
 
-
-wsbfev1 = WSBFEv1()
 wsaa = WSAA()
-tax = wsaa.Autenticar('wsfe', 'rei.crt', 'rei.key')
-
-wsbfev1.Cuit = cuit
-wsbfev1.SetTicketAcceso(tax)
-wsbfev1.Conectar(CACHE, WSDL)
-wsbfev1.Dummy()
+ta = wsaa.Autenticar('wsfe', CERT, PKEY)
+tra = at.create_tra()
+sign = at.sign_tra(tra, CERT, PKEY)
 
 
-def test_autenticar(sign=tax):
-    assert isinstance(tax, str)
+def test_create_tra():
+    assert isinstance(tra, bytes)
 
 
-def test_app_server_status():
-    assert wsbfev1.AppServerStatus == 'OK'
+if m2 or crypt:
+    def test_sign_tra_cript():
+        assert sign.startswith('MIIG+')
+
+    # si esta instalado m2crypto o cryptography
+    def test_analizar_certificado():
+        wsaa.AnalizarCertificado(CERT)
+        assert wsaa.Identidad
+        assert wsaa.Caducidad
+        assert wsaa.Emisor
+
+    # si esta instalado m2crypto o cryptography
+    def test_crear_clave_privada():
+        pkey = wsaa.CrearClavePrivada()
+        assert pkey
+
+    # si esta instalado m2crypto o cryptography
+    def test_crear_pedido_certificado():
+        csm = wsaa.CrearPedidoCertificado()
+        assert csm
+else:
+    # con OpenSSL directo
+    def test_sign_tra_openssl():
+        assert sign.startswith('MIIG+')
 
 
-def test_db_server_status():
-    assert wsbfev1.DbServerStatus == 'OK'
+def test_expirado():
+    exp = wsaa.Expirado()
+    assert exp or True
 
 
-def test_Auth_server_status():
-    assert wsbfev1.AppServerStatus == 'OK'
+def test_autenticar():
+    assert ta
