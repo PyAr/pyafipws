@@ -10,9 +10,9 @@
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 
-from pyafipws.wsaa import WSAA
-from pyafipws.wsfev1 import WSFEv1
-"Pruebas para WSFEv1 de AFIP (Factura Electrónica Mercado Interno sin detalle)"
+"""Pruebas para WSFEv1 de AFIP
+(Factura Electrónica Mercado Interno sin detalle)
+"""
 
 __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
@@ -21,27 +21,38 @@ __license__ = "GPL 3.0"
 import unittest
 import datetime
 import sys
+import os
 
-sys.path.append("/home/reingart")        # TODO: proper packaging
+from pyafipws.wsaa import WSAA
+from pyafipws.wsfev1 import WSFEv1
 
+# Para utilizar variables de entorno en Travis 
+if not os.path.exists('rei.crt'):
+    cert = os.environ['CERT']
+    pkey = os.environ['PKEY']
+
+    CERT = cert.replace(r'\n', '\n')
+    PKEY = pkey.replace(r'\n', '\n')
+
+    with open('rei.crt', 'w', encoding='utf-8') as f:
+        f.write(CERT)    
+    
+    with open('rei.key', 'w', encoding='utf-8') as f:
+        f.write(PKEY)
 
 WSDL = "https://wswhomo.afip.gov.ar/wsfev1/service.asmx?WSDL"
-CUIT = 20267565393
-CERT = "/home/reingart/pyafipws/reingart.crt"
-PRIVATEKEY = "/home/reingart/pyafipws/reingart.key"
-CACERT = "/home/reingart/Git/pyafipws/afip_root_desa_ca.crt"
-CACHE = "/home/reingart/pyafipws/cache"
+CUIT = os.environ['CUIT']
+CERT = 'rei.crt'
+PRIVATEKEY = 'rei.key'
+CACHE = ""
 
-# Autenticación:
-
-ta = WSAA().Autenticar("wsfe", "reingart.crt", "reingart.key")
-print(ta)
+# obteniendo el TA para pruebas
+ta = WSAA().Autenticar("wsfe", "rei.crt", "rei.key")
 
 
 class TestFE(unittest.TestCase):
 
     def setUp(self):
-        sys.argv.append("--trace")                  # TODO: use logging
         self.wsfev1 = wsfev1 = WSFEv1()
         wsfev1.Cuit = CUIT
         wsfev1.SetTicketAcceso(ta)

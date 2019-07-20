@@ -10,46 +10,49 @@
 
 """Test para WSFEXv1 de AFIP(Factura Electrónica Exportación Versión 1)"""
 
+__author__ = "Mariano Reingart <reingart@gmail.com>"
+__copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
+__license__ = "GPL 3.0"
+
 import unittest
 import sys
+import os
 import datetime
 
 from pyafipws.wsaa import WSAA
 from pyafipws.wsfexv1 import WSFEXv1
 
-__author__ = "Mariano Reingart <reingart@gmail.com>"
-__copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
-__license__ = "GPL 3.0"
+# Para utilizar variables de entorno en Travis 
+if not os.path.exists('rei.crt'):
+    cert = os.environ['CERT']
+    pkey = os.environ['PKEY']
+
+    CERT = cert.replace(r'\n', '\n')
+    PKEY = pkey.replace(r'\n', '\n')
+
+    with open('rei.crt', 'w', encoding='utf-8') as f:
+        f.write(CERT)    
+    
+    with open('rei.key', 'w', encoding='utf-8') as f:
+        f.write(PKEY)
 
 WSDL = "https://wswhomo.afip.gov.ar/wsfexv1/service.asmx?WSDL"
-CUIT = 20267565393
-CERT = "/pyafipws/reingart.crt"
-PRIVATEKEY = "/pyafipws/reingart.key"
-CACERT = "/pyafipws/afip_root_desa_ca.crt"
-CACHE = "/pyafipws/cache"
-
-# Debido a que Python solicita una opción de diseño, hay una advertencia
-# sobre una conexión no cerrada al ejecutar las pruebas.
-# https://github.com/kennethreitz/requests/issues/3912
-# Esto puede ser molesto al ejecutar las pruebas, por lo tanto,
-# suprimir la advertencia como se discute en
-# https://github.com/kennethreitz/requests/issues/1882
+CUIT = os.environ['CUIT']
+CERT = 'rei.crt'
+PRIVATEKEY = 'rei.key'
+CACHE = ""
 
 # obteniendo el TA para pruebas
-
-ta = WSAA().Autenticar("wsfex", "reingart.crt", "reingart.key")
-print(ta)
+ta = WSAA().Autenticar("wsfex", "rei.crt", "rei.key")
 
 
 class TestFEX(unittest.TestCase):
 
     def setUp(self):
-        sys.argv.append('--trace')
         self.wsfexv1 = wsfexv1 = WSFEXv1()
-        wsfexv1.Cuit = 20267565393
+        wsfexv1.Cuit = CUIT
         wsfexv1.SetTicketAcceso(ta)
         wsfexv1.Conectar(CACHE, WSDL)
-        print(';)')
 
     def test_dummy(self):
         """Test de estado del servidor."""

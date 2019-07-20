@@ -16,42 +16,44 @@ __license__ = "GPL 3.0"
 
 import unittest
 import sys
+import os
 from datetime import datetime, timedelta
 
 from pyafipws.wsaa import WSAA
 from pyafipws.wsbfev1 import WSBFEv1
 
+# Para utilizar variables de entorno en Travis 
+if not os.path.exists('rei.crt'):
+    cert = os.environ['CERT']
+    pkey = os.environ['PKEY']
+
+    CERT = cert.replace(r'\n', '\n')
+    PKEY = pkey.replace(r'\n', '\n')
+
+    with open('rei.crt', 'w', encoding='utf-8') as f:
+        f.write(CERT)    
+    
+    with open('rei.key', 'w', encoding='utf-8') as f:
+        f.write(PKEY)
 
 WSDL = "https://wswhomo.afip.gov.ar/wsbfev1/service.asmx?WSDL"
-CUIT = 20267565393
-CERT = "/pyafipws/reingart.crt"
-PRIVATEKEY = "/pyafipws/reingart.key"
-CACERT = "/pyafipws/afip_root_desa_ca.crt"
-CACHE = "/pyafipws/cache"
-
-# Debido a que Python solicita una opción de diseño, hay una advertencia
-# sobre una conexión no cerrada al ejecutar las pruebas.
-# https://github.com/kennethreitz/requests/issues/3912
-# Esto puede ser molesto al ejecutar las pruebas, por lo tanto,
-# suprimir la advertencia como se discute en
-# https://github.com/kennethreitz/requests/issues/1882
+CUIT = os.environ['CUIT']
+CERT = 'rei.crt'
+PRIVATEKEY = 'rei.key'
+CACHE = ""
 
 # obteniendo el TA para pruebas
-
-ta = WSAA().Autenticar("wsbfe", "reingart.crt", "reingart.key")
-print(ta)
+ta = WSAA().Autenticar("wsbfe", "rei.crt", "rei.key")
 
 
 class TestBFE(unittest.TestCase):
     """Test para WSBFEv1 de AFIP(Bonos Fiscales electronicos v1.1)"""
 
     def setUp(self):
-        sys.argv.append('--trace')
         self.wsbfev1 = wsbfev1 = WSBFEv1()
         wsbfev1.Cuit = CUIT
         wsbfev1.SetTicketAcceso(ta)
         wsbfev1.Conectar(CACHE, WSDL)
-        print(';)')
 
     def test_dummy(self):
         """Test de estado del servidor."""
