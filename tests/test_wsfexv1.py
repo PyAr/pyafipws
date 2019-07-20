@@ -23,7 +23,6 @@ from pyafipws.wsaa import WSAA
 from pyafipws.wsfexv1 import WSFEXv1
 
 # Para utilizar variables de entorno en Travis 
-
 if not os.path.exists('rei.crt'):
     cert = os.environ['CERT']
     pkey = os.environ['PKEY']

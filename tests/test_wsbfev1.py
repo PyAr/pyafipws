@@ -23,17 +23,18 @@ from pyafipws.wsaa import WSAA
 from pyafipws.wsbfev1 import WSBFEv1
 
 # Para utilizar variables de entorno en Travis 
-cert = os.environ['CERT']
-pkey = os.environ['PKEY']
+if not os.path.exists('rei.crt'):
+    cert = os.environ['CERT']
+    pkey = os.environ['PKEY']
 
-CERT = cert.replace(r'\n', '\n')
-PKEY = pkey.replace(r'\n', '\n')
+    CERT = cert.replace(r'\n', '\n')
+    PKEY = pkey.replace(r'\n', '\n')
 
-with open('rei.crt', 'w', encoding='utf-8') as f:
-    f.write(CERT)
+    with open('rei.crt', 'w', encoding='utf-8') as f:
+        f.write(CERT)    
     
-with open('rei.key', 'w', encoding='utf-8') as f:
-    f.write(PKEY)
+    with open('rei.key', 'w', encoding='utf-8') as f:
+        f.write(PKEY)
 
 WSDL = "https://wswhomo.afip.gov.ar/wsbfev1/service.asmx?WSDL"
 CUIT = os.environ['CUIT']
