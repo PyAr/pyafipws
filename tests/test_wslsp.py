@@ -8,7 +8,7 @@
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 
-"""Test para Módulo WSLSP 
+"""Test para Módulo WSLSP
 Liquidación Sector Pecuario (hacienda/carne).
 """
 
