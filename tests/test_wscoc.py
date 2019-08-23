@@ -37,8 +37,8 @@ wsaa = WSAA()
 wscoc = WSCOC()
 ta = wsaa.Autenticar("wscoc", CERT, PKEY)
 wscoc.Cuit = CUIT
-wscoc.SetTicketAcceso(ta)
-wscoc.Conectar(CACHE, WSDL)
+# wscoc.SetTicketAcceso(ta)
+# wscoc.Conectar(CACHE, WSDL)
 
 
 def test_conectar():
