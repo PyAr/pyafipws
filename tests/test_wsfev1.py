@@ -10,31 +10,33 @@
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 
-from pyafipws.wsaa import WSAA
-from pyafipws.wsfev1 import WSFEv1
-"Pruebas para WSFEv1 de AFIP (Factura Electrónica Mercado Interno sin detalle)"
+
+"""Pruebas para WSFEv1 de AFIP
+(Factura Electrónica Mercado Interno sin detalle)"""
 
 __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
 __license__ = "GPL 3.0"
 
+
+from pyafipws.wsaa import WSAA
+from pyafipws.wsfev1 import WSFEv1
+
 import unittest
 import datetime
 import sys
-
-sys.path.append("/home/reingart")        # TODO: proper packaging
+import os
 
 
 WSDL = "https://wswhomo.afip.gov.ar/wsfev1/service.asmx?WSDL"
-CUIT = 20267565393
-CERT = "/home/reingart/pyafipws/reingart.crt"
-PRIVATEKEY = "/home/reingart/pyafipws/reingart.key"
-CACERT = "/home/reingart/Git/pyafipws/afip_root_desa_ca.crt"
-CACHE = "/home/reingart/pyafipws/cache"
+CUIT = os.environ['CUIT']
+CERT = 'rei.crt'
+PKEY = 'rei.key'
+CACHE = ""
 
 # Autenticación:
 
-ta = WSAA().Autenticar("wsfe", "reingart.crt", "reingart.key")
+ta = WSAA().Autenticar("wsfe", CERT, PKEY)
 print(ta)
 
 

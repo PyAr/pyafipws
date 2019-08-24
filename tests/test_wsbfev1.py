@@ -14,6 +14,7 @@ __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
 __license__ = "GPL 3.0"
 
+import os
 import unittest
 import sys
 from datetime import datetime, timedelta
@@ -23,11 +24,10 @@ from pyafipws.wsbfev1 import WSBFEv1
 
 
 WSDL = "https://wswhomo.afip.gov.ar/wsbfev1/service.asmx?WSDL"
-CUIT = 20267565393
-CERT = "/pyafipws/reingart.crt"
-PRIVATEKEY = "/pyafipws/reingart.key"
-CACERT = "/pyafipws/afip_root_desa_ca.crt"
-CACHE = "/pyafipws/cache"
+CUIT = os.environ['CUIT']
+CERT = 'rei.crt'
+PKEY = 'rei.key'
+CACHE = ""
 
 # Debido a que Python solicita una opción de diseño, hay una advertencia
 # sobre una conexión no cerrada al ejecutar las pruebas.
@@ -38,7 +38,7 @@ CACHE = "/pyafipws/cache"
 
 # obteniendo el TA para pruebas
 
-ta = WSAA().Autenticar("wsbfe", "reingart.crt", "reingart.key")
+ta = WSAA().Autenticar("wsbfe", CERT, PKEY)
 print(ta)
 
 
@@ -51,7 +51,6 @@ class TestBFE(unittest.TestCase):
         wsbfev1.Cuit = CUIT
         wsbfev1.SetTicketAcceso(ta)
         wsbfev1.Conectar(CACHE, WSDL)
-        print(';)')
 
     def test_dummy(self):
         """Test de estado del servidor."""

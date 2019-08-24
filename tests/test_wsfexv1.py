@@ -10,23 +10,24 @@
 
 """Test para WSFEXv1 de AFIP(Factura Electrónica Exportación Versión 1)"""
 
+__author__ = "Mariano Reingart <reingart@gmail.com>"
+__copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
+__license__ = "GPL 3.0"
+
 import unittest
 import sys
+import os
 import datetime
 
 from pyafipws.wsaa import WSAA
 from pyafipws.wsfexv1 import WSFEXv1
 
-__author__ = "Mariano Reingart <reingart@gmail.com>"
-__copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
-__license__ = "GPL 3.0"
 
 WSDL = "https://wswhomo.afip.gov.ar/wsfexv1/service.asmx?WSDL"
-CUIT = 20267565393
-CERT = "/pyafipws/reingart.crt"
-PRIVATEKEY = "/pyafipws/reingart.key"
-CACERT = "/pyafipws/afip_root_desa_ca.crt"
-CACHE = "/pyafipws/cache"
+CUIT = os.environ['CUIT']
+CERT = 'rei.crt'
+PKEY = 'rei.key'
+CACHE = ""
 
 # Debido a que Python solicita una opción de diseño, hay una advertencia
 # sobre una conexión no cerrada al ejecutar las pruebas.
@@ -37,7 +38,7 @@ CACHE = "/pyafipws/cache"
 
 # obteniendo el TA para pruebas
 
-ta = WSAA().Autenticar("wsfex", "reingart.crt", "reingart.key")
+ta = WSAA().Autenticar("wsfex", CERT, PKEY)
 print(ta)
 
 
@@ -94,11 +95,11 @@ class TestFEX(unittest.TestCase):
 
         # Creo una factura (internamente, no se llama al WebService)
         fact = wsfexv1.CrearFactura(tipo_cbte, punto_vta, cbte_nro, fecha_cbte,
-                             imp_total, tipo_expo, permiso_existente, dst_cmp,
-                             cliente, cuit_pais_cliente, domicilio_cliente,
-                             id_impositivo, moneda_id, moneda_ctz,
-                             obs_comerciales, obs, forma_pago, incoterms,
-                             idioma_cbte, incoterms_ds)
+                                    imp_total, tipo_expo, permiso_existente, dst_cmp,
+                                    cliente, cuit_pais_cliente, domicilio_cliente,
+                                    id_impositivo, moneda_id, moneda_ctz,
+                                    obs_comerciales, obs, forma_pago, incoterms,
+                                    idioma_cbte, incoterms_ds)
         self.assertTrue(fact)
 
     def test_agregar_item(self):
@@ -134,7 +135,7 @@ class TestFEX(unittest.TestCase):
         cbteasoc_nro = 1234
         cbteasoc_cuit = 20111111111
         cbteasoc = wsfexv1.AgregarCmpAsoc(
-                cbteasoc_tipo, cbteasoc_pto_vta, cbteasoc_nro, cbteasoc_cuit)
+            cbteasoc_tipo, cbteasoc_pto_vta, cbteasoc_nro, cbteasoc_cuit)
         self.assertTrue(cbteasoc)
 
     def test_autorizar(self):
