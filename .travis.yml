@@ -13,9 +13,13 @@ before_install:
 install:
       - "python setup.py -q install"
 
+before_script:
+  - cd tests
+  - python build-travis.py
+
 script:
   - pytest -v
 
 branches:
   only:
-    - gsoc
+    - gsoc-2019-final
