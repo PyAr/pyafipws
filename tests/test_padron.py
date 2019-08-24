@@ -86,6 +86,7 @@ def test_buscar_cuit():
     assert busqueda
 
 
+@skp
 def test_guardar():
     """Test guardar."""
     tipo_doc = 80
