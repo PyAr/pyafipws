@@ -767,7 +767,7 @@ class FEPDF(object):
                 import locale
 
                 locale.setlocale(locale.LC_ALL, loc)
-                return locale.format_string(
+                return locale.format(
                     fmt,
                     Decimal(str(i).replace(",", ".")),
                     grouping=True,
