@@ -1,2 +1,4 @@
 pytest==6.2.4
 pytest-vcr==1.0.2
+pytest==4.6.11; python_version <= '2.7'
+pytest==6.2.3; python_version > '3'
