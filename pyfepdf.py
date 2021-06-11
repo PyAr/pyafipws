@@ -1541,7 +1541,7 @@ class FEPDF(object):
                     else:
                         barras = ""
 
-                    f.set("CodigoBarras", barras)
+                    f.set("CodigoBarras", str(barras))
                     f.set("CodigoBarrasLegible", barras)
 
                     if not HOMO and barras and fact.get("resultado") == "A":
