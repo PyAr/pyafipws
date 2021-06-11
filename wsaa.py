@@ -624,3 +624,4 @@ if __name__ == "__main__":
             print("Generation Time:", wsaa.ObtenerTagXml("generationTime"))
             print("Expiration Time:", wsaa.ObtenerTagXml("expirationTime"))
             print("Expiro?", wsaa.Expirado())
+
