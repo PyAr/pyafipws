@@ -1173,7 +1173,7 @@ class WSCPE(BaseWS):
 
 INSTALL_DIR = WSCPE.InstallDir = get_install_dir()
 
-if __name__ == "__main__":
+def main():
     # obteniendo el TA
     from .wsaa import WSAA
 
@@ -1596,3 +1596,7 @@ if __name__ == "__main__":
 
     if wscpe.Errores:
         print("Error:", wscpe.ErrMsg)
+
+
+if __name__ == "__main__":
+    main()
