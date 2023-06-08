@@ -54,7 +54,7 @@ try:
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.asymmetric import rsa
     from cryptography.hazmat.bindings.openssl.binding import Binding
-    from cryptography.hamzat.primitives.serialization import pkcs7
+    from cryptography.hazmat.primitives.serialization import pkcs7
 
 except ImportError:
     ex = exception_info()
