@@ -174,24 +174,24 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
                     # Devolver CMS
                     return part.get_payload(decode=False)
 
-            p7 = pkcs7.PKCS7SignatureBuilder().set_data(
-                tra
-            ).add_signer(
-                cert, private_key, hashes.SHA256()
-            ).sign(
-                serialization.Encoding.SMIME, [pkcs7.PKCS7Options.Binary]
-            )
+        p7 = pkcs7.PKCS7SignatureBuilder().set_data(
+            tra
+        ).add_signer(
+            cert, private_key, hashes.SHA256()
+        ).sign(
+            serialization.Encoding.SMIME, [pkcs7.PKCS7Options.Binary]
+        )
 
-            # Generar p7 en formato mail y recortar headers
-            msg = email.message_from_string(p7.decode("utf8"))
-            for part in msg.walk():
-                filename = part.get_filename()
-                if filename == "smime.p7s":
-                    # Es la parte firmada?
-                    # Devolver CMS
-                    return part.get_payload(decode=False)
-            else:
-                raise RuntimeError("Part not found")
+        # Generar p7 en formato mail y recortar headers
+        msg = email.message_from_string(p7.decode("utf8"))
+        for part in msg.walk():
+            filename = part.get_filename()
+            if filename == "smime.p7s":
+                # Es la parte firmada?
+                # Devolver CMS
+                return part.get_payload(decode=False)
+        else:
+            raise RuntimeError("Part not found")
     else:
         # Firmar el texto (tra) usando OPENSSL directamente
         try:
