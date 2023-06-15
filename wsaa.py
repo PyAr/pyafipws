@@ -149,6 +149,8 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
             finally:
                 # Liberar memoria asignada
                 _lib.BIO_free(bio_in)
+            # Se crea un buffer nuevo porque la firma lo consume
+            bio_in = _lib.BIO_new_mem_buf(tra, len(tra))
             try:
                 # Crear buffer de salida
                 bio_out = _lib.BIO_new(_lib.BIO_s_mem())
