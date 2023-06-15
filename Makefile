@@ -26,10 +26,8 @@ sign-tra:
 sign-cert:
 	python -m pyafipws.wsfev1 --prueba
 
-# Use this command wisely as it might wipe out some files
 # Use "git clean -n" to see the files to be cleaned
-# Use only when only the config files are untracked 
-clean-tests: 
-	git clean -f
+# Use only when only the config files are untracked
+# Finally use "git clean -f" to remove untracked files(in this case test files)
 
 .PHONY: install test
