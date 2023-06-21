@@ -56,7 +56,6 @@ try:
     from cryptography.hazmat.bindings.openssl.binding import Binding
     from cryptography.hazmat.primitives.serialization import pkcs7
 
-
 except ImportError:
     ex = exception_info()
     warnings.warn("No es posible importar cryptography (OpenSSL)")
@@ -118,6 +117,8 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
         _lib = Binding.lib
         _ffi = Binding.ffi
         # Crear un buffer desde el texto
+        # Se crea un buffer nuevo porque la firma lo consume
+        bio_in = _lib.BIO_new_mem_buf(tra, len(tra))
 
         # Leer privatekey y cert
         if not privatekey.startswith(b"-----BEGIN RSA PRIVATE KEY-----"):
@@ -176,11 +177,11 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
                     return part.get_payload(decode=False)
 
         p7 = pkcs7.PKCS7SignatureBuilder().set_data(
-                tra
+            tra
         ).add_signer(
             cert, private_key, hashes.SHA256()
         ).sign(
-            serialization.Encoding.SMIME, [pkcs7.PKCS7Options.DetachedSignature]
+            serialization.Encoding.SMIME, [pkcs7.PKCS7Options.Binary]
         )
 
         # Generar p7 en formato mail y recortar headers
