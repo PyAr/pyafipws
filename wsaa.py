@@ -175,13 +175,13 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
                     # Devolver CMS
                     return part.get_payload(decode=False)
 
-        p7 = pkcs7.PKCS7SignatureBuilder().set_data(
-                tra
-        ).add_signer(
-            cert, private_key, hashes.SHA256()
-        ).sign(
-            serialization.Encoding.SMIME, [pkcs7.PKCS7Options.DetachedSignature]
-        )
+        # p7 = pkcs7.PKCS7SignatureBuilder().set_data(
+        #         tra
+        # ).add_signer(
+        #     cert, private_key, hashes.SHA256()
+        # ).sign(
+        #     serialization.Encoding.SMIME, [pkcs7.PKCS7Options.DetachedSignature]
+        # )
 
         # Generar p7 en formato mail y recortar headers
         msg = email.message_from_string(p7.decode("utf8"))
