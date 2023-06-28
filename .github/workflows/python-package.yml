@@ -21,16 +21,13 @@ jobs:
         python-version: [2.7, 3.9, 3.11]
 
     steps:
-    - uses: MatteoH2O1999/setup-python@v1
+    - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        allow-build: info
-        cache-build: true
-        cache: pip
     - name: Install dependencies
-      run:
+      run: |
         python -m pip install --upgrade pip
         python -m pip install flake8
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
