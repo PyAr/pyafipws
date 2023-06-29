@@ -19,13 +19,6 @@ jobs:
         python-version: [2.7, 3.9, 3.11]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      if: matrix.python-version != '2.7'
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    
     - name: Set Up Python 2.7
       if: matrix.python-version == '2.7'
       run: |
@@ -36,7 +29,13 @@ jobs:
         export PYTHONPATH=`echo /usr/share/python-wheels/pip-*py2*-.whl`
         sudo --preserve-env=PYTHONPATH python -m pip install --upgrade pip setuptools wheel
         sudo chown -R $USER /usr/local/lib/python2.7
-        
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      if: matrix.python-version != '2.7'
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
