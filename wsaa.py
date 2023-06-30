@@ -140,7 +140,7 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
                 cert = cert.encode("utf-8")
         cert = x509.load_pem_x509_certificate(cert)
 
-        if sys.version.split(" ")[0][0:3] == "2.7":
+        if sys.version_info.major == 2:
             try:
                 # Firmar el texto (tra) usando cryptography (openssl bindings para python)
                 p7 = _lib.PKCS7_sign(
