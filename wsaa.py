@@ -114,12 +114,6 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
         tra = tra.encode("utf8")
 
     if Binding:
-        _lib = Binding.lib
-        _ffi = Binding.ffi
-        # Crear un buffer desde el texto
-        # Se crea un buffer nuevo porque la firma lo consume
-        bio_in = _lib.BIO_new_mem_buf(tra, len(tra))
-
         # Leer privatekey y cert
         if not privatekey.startswith(b"-----BEGIN RSA PRIVATE KEY-----"):
             privatekey = open(privatekey).read()
@@ -140,7 +134,13 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
                 cert = cert.encode("utf-8")
         cert = x509.load_pem_x509_certificate(cert)
 
-        if sys.version.split(" ")[0][0:3] == "2.7":
+        if sys.version_info.major == 2:
+            _lib = Binding.lib
+            _ffi = Binding.ffi
+            # Crear un buffer desde el texto
+            # Se crea un buffer nuevo porque la firma lo consume
+            bio_in = _lib.BIO_new_mem_buf(tra, len(tra))
+
             try:
                 # Firmar el texto (tra) usando cryptography (openssl bindings para python)
                 p7 = _lib.PKCS7_sign(
@@ -161,34 +161,27 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
                     # Tomar datos para la salida
                     result_buffer = _ffi.new("char**")
                     buffer_length = _lib.BIO_get_mem_data(bio_out, result_buffer)
-                    output = _ffi.buffer(result_buffer[0], buffer_length)[:]
+                    p7 = _ffi.buffer(result_buffer[0], buffer_length)[:]
                 finally:
                     _lib.BIO_free(bio_out)
             finally:
                 _lib.BIO_free(bio_in)
 
-            # Generar p7 en formato mail y recortar headers
-            msg = email.message_from_string(output.decode("utf8"))
-            for part in msg.walk():
-                filename = part.get_filename()
-                if filename == "smime.p7m":
-                    # Es la parte firmada?
-                    # Devolver CMS
-                    return part.get_payload(decode=False)
+        else:
+            p7 = pkcs7.PKCS7SignatureBuilder().set_data(
+                tra
+            ).add_signer(
+                cert, private_key, hashes.SHA256()
+            ).sign(
+                serialization.Encoding.SMIME, [pkcs7.PKCS7Options.Binary]
+            )
 
-        p7 = pkcs7.PKCS7SignatureBuilder().set_data(
-            tra
-        ).add_signer(
-            cert, private_key, hashes.SHA256()
-        ).sign(
-            serialization.Encoding.SMIME, [pkcs7.PKCS7Options.Binary]
-        )
 
         # Generar p7 en formato mail y recortar headers
         msg = email.message_from_string(p7.decode("utf8"))
         for part in msg.walk():
             filename = part.get_filename()
-            if filename == "smime.p7s":
+            if filename and filename.startswith("smime.p7"):
                 # Es la parte firmada?
                 # Devolver CMS
                 return part.get_payload(decode=False)
