@@ -175,10 +175,6 @@ def sign_tra(tra, cert=CERT, privatekey=PRIVATEKEY, passphrase=""):
             ).sign(
                 serialization.Encoding.SMIME, [pkcs7.PKCS7Options.Binary]
             )
-<<<<<<< HEAD
-
-=======
->>>>>>> d676cac9e7e661c2d7c0fc521b366cda65b3be0a
 
         # Generar p7 en formato mail y recortar headers
         msg = email.message_from_string(p7.decode("utf8"))
