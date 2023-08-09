@@ -286,7 +286,7 @@ class NSISScript(object):
                 ),
                 "unregister_com_servers_exe": "".join(
                     [
-                        unregister_com_server_exe % comserver
+                        unregister_`com_server_exe % comserver
                         for comserver in self.comserver_files_exe
                     ]
                 ),

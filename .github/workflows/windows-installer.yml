@@ -44,6 +44,14 @@ jobs:
     - name: Build executables
       run: |
         python setup_win.py py2exe
+    - name: Install NSIS for building Installers
+      run: |
+        Invoke-WebRequest -Uri https://sourceforge.net/projects/nsis/files/latest/download -OutFile NSISInstaller.exe
+        Start-Process -FilePath "NSISInstaller.exe" -ArgumentList "/S" -Wait
+        del "NSISInstaller.exe"
+    - name: Build PyAfipWs Installer
+      run: |
+        makensis.exe base.nsi
     - name: Remove uneeded libs (TK)
       run: |
         Remove-Item .\dist\lib\tcl -recurse
@@ -65,6 +73,7 @@ jobs:
         name: dist-${{ matrix.targetplatform }}
         path: |
           dist/
+          
 
   test:
     name: "Full End-2-End test"
