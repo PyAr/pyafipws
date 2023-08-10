@@ -29,10 +29,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools wheel
         python -m pip install --upgrade cachetools pefile
-    - name: Uninstall PIL for x86 Systems
-      if: matrix.targetplatform == 'x86'
-      run: |
-        pip uninstall pil
     - name: Install production dependencies
       run: |
         pip install -r requirements.txt
