@@ -82,6 +82,7 @@ jobs:
         name: PyAfipWs-Installer-${{ matrix.targetplatform }}
         path: |
           Installer/
+  
   test:
     name: "Full End-2-End test"
     needs: compile
