@@ -78,7 +78,7 @@ jobs:
       with:
         name: 
         path: |
-          ./**PyAfipWs-*-full.exe
+          **/PyAfipWs-*-full.exe
   
   test:
     name: "Full End-2-End test"
