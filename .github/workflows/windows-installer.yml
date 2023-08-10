@@ -76,7 +76,7 @@ jobs:
     - name: Deploy PyAfipWs Installer
       uses: actions/upload-artifact@v3
       with:
-        name: 
+        name: PyAfipWs-Installer-${{ matrix.targetplatform }}
         path: |
           **/PyAfipWs-*-full.exe
   
