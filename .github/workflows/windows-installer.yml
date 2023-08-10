@@ -52,11 +52,6 @@ jobs:
     - name: Build PyAfipWs Installer
       run: |
         makensis.exe base.nsi
-        mkdir Installer
-        Get-ChildItem -Path .\ -Filter *.exe | Where-Object { $_.Name -match "^PyAfipWs- full.exe$" } | Move-Item -Destination .\Installer
-        cd Installer 
-        ls
-
     - name: Remove uneeded libs (TK)
       run: |
         Remove-Item .\dist\lib\tcl -recurse
@@ -81,9 +76,9 @@ jobs:
     - name: Deploy PyAfipWs Installer
       uses: actions/upload-artifact@v3
       with:
-        name: PyAfipWs-Installer-${{ matrix.targetplatform }}
+        name: 
         path: |
-          Installer/
+          ./**PyAfipWs-*-full.exe
   
   test:
     name: "Full End-2-End test"
