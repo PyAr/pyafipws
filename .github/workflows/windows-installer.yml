@@ -29,10 +29,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools wheel
         python -m pip install --upgrade cachetools pefile
-    - name: Install missing dependency for 32bit systems
-      if: matrix.targetplatform == 'x86'
-      run: |
-        pip install wheel
     - name: Install production dependencies
       run: |
         pip install -r requirements.txt
