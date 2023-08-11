@@ -32,7 +32,7 @@ jobs:
     - name: Install missing dependency for 32bit systems
       if: matrix.targetplatform == 'x86'
       run: |
-        pip install pillow
+        pip install wheel
     - name: Install production dependencies
       run: |
         pip install -r requirements.txt
