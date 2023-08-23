@@ -31,7 +31,7 @@ jobs:
         python -m pip install --upgrade cachetools pefile
     - name: Print Architecture
       run: |
-        python -c 'import platform; print platform.machine()'
+        python -c 'import platform; print(platform.machine())'
     - name: Install production dependencies
       run: |
         pip install -r requirements.txt
