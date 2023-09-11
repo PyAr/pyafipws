@@ -31,7 +31,7 @@ def leer(fn="entrada.csv", delimiter=";"):
     ext = os.path.splitext(fn)[1].lower()
     items = []
     if ext == ".csv":
-        csvfile = open(fn, "rb")
+        csvfile = open(fn, "r")
         # deducir dialecto y delimitador
         try:
             dialect = csv.Sniffer().sniff(csvfile.read(256), delimiters=[";", ","])
@@ -52,7 +52,7 @@ def leer(fn="entrada.csv", delimiter=";"):
         from openpyxl import load_workbook
 
         wb = load_workbook(filename=fn)
-        ws1 = wb.get_active_sheet()
+        ws1 = wb.active
         for row in ws1.rows:
             fila = []
             for cell in row:
@@ -65,7 +65,7 @@ def leer(fn="entrada.csv", delimiter=";"):
 def aplanar(regs):
     "Convierte una estructura python en planilla CSV (PyRece)"
 
-    from formato_xml import MAP_ENC
+    from pyafipws.formatos.formato_xml import MAP_ENC
 
     filas = []
     for reg in regs:
@@ -205,7 +205,7 @@ def aplanar(regs):
 def desaplanar(filas):
     "Dado una planilla, conviertir en estructura python"
 
-    from formato_xml import MAP_ENC
+    from pyafipws.formatos.formato_xml import MAP_ENC
 
     def max_li(colname):
         l = [int(k[len(colname) :]) + 1 for k in filas[0] if k.startswith(colname)]
@@ -339,7 +339,7 @@ def escribir(filas, fn="salida.csv", delimiter=";"):
     "Dado una lista de comprobantes (diccionarios), aplana y escribe"
     ext = os.path.splitext(fn)[1].lower()
     if ext == ".csv":
-        f = open(fn, "wb")
+        f = open(fn, "w")
         csv_writer = csv.writer(f, dialect="excel", delimiter=";")
         # TODO: filas = aplanar(regs)
         for fila in filas:
@@ -354,7 +354,7 @@ def escribir(filas, fn="salida.csv", delimiter=";"):
         from openpyxl import Workbook
 
         wb = Workbook()
-        ws1 = wb.get_active_sheet()
+        ws1 = wb.active
         for fila in filas:
             ws1.append(fila)
         wb.save(filename=fn)
