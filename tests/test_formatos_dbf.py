@@ -17,3 +17,31 @@ __copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
 __license__ = "GPL 3.0"
 
 
+from pyafipws.formatos.formato_dbf import (definir_campos, dar_nombre_campo, leer,
+    escribir, ayuda
+)
+
+import pytest
+import os
+
+
+pytestmark = [pytest.mark.dontusefix]
+
+
+def test_definir_campos():
+    
+    formato = [
+        ("pdf", 100, "Alfanumerico"),
+        ("email", 100, "Alfanumerico"),
+    ]
+
+    field_keys, field_definitions = definir_campos(formato)
+
+    assert field_keys == ["pdf", "email"]
+    assert field_definitions == ["pdf C(100)", "email C(100)"]
+
+
+def test_dar_nombre_campo():
+    key = "Dato_adicional1"
+
+    assert dar_nombre_campo(key) == "datoadic01"
