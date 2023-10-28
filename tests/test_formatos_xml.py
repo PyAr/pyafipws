@@ -16,3 +16,11 @@ __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
 __license__ = "GPL 3.0"
 
+
+import pytest
+from pyafipws.formatos.formato_xml import leer, escribir
+
+
+pytestmark = [pytest.mark.dontusefix]
+
+   
