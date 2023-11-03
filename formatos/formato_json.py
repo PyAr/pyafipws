@@ -30,7 +30,6 @@ except ImportError:
 
 def leer(fn="entrada.json"):
     "Analiza un archivo JSON y devuelve un diccionario (confia en que el json este ok)"
-    items = []
     jsonfile = open(fn, "rb")
     regs = json.load(jsonfile)
     return regs

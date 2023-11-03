@@ -32,7 +32,7 @@ NULL = None
 
 
 def esquema_sql(tipos_registro, conf={}):
-    from formato_txt import A, N, I
+    from pyafipws.formatos.formato_txt import A, N, I
 
     for tabla, formato in tipos_registro:
         sql = []
@@ -128,7 +128,7 @@ def max_id(db, schema={}):
 
 
 def redondear(formato, clave, valor):
-    from formato_txt import A, N, I
+    from pyafipws.formatos.formato_txt import A, N, I
 
     # corregir redondeo (aparentemente sqlite no guarda correctamente los decimal)
     import decimal
@@ -166,7 +166,7 @@ def redondear(formato, clave, valor):
 
 
 def escribir(facts, db, schema={}, commit=True):
-    from formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, DATO
+    from pyafipws.formatos.formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, DATO
 
     tablas, campos, campos_rev = configurar(schema)
     cur = db.cursor()
@@ -326,7 +326,7 @@ def escribir(facts, db, schema={}, commit=True):
 
 
 def modificar(fact, db, schema={}, webservice="wsfev1", ids=None, conf_db={}):
-    from formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, DATO
+    from pyafipws.formatos.formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, DATO
 
     update = [
         "cae",
@@ -372,7 +372,7 @@ def modificar(fact, db, schema={}, webservice="wsfev1", ids=None, conf_db={}):
 
 
 def leer(db, schema={}, webservice="wsfev1", ids=None, **kwargs):
-    from formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, DATO
+    from pyafipws.formatos.formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, DATO
 
     tablas, campos, campos_rev = configurar(schema)
     cur = db.cursor()
@@ -533,7 +533,7 @@ def leer(db, schema={}, webservice="wsfev1", ids=None, **kwargs):
 
 def ayuda():
     print("-- Formato:")
-    from formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, DATO, PERMISO
+    from pyafipws.formatos.formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, DATO, PERMISO
 
     tipos_registro = [
         ("encabezado", ENCABEZADO),

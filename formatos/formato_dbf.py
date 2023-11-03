@@ -186,7 +186,7 @@ def escribir(regs, archivos=None, carpeta=None):
             if DEBUG:
                 print("leyendo tabla", nombre, filename)
             tabla = dbf.Table(filename, campos)
-
+            tabla.open(dbf.READ_WRITE)
             for d in l:
                 r = {}
                 for fmt in formato:
