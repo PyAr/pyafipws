@@ -18,7 +18,44 @@ __license__ = "GPL 3.0"
 
 
 import pytest
-from pyafipws.formatos.formato_txt import leer_linea_txt, escribir_linea_txt
+from pyafipws.formatos.formato_txt import leer_linea_txt, escribir_linea_txt, leer, escribir
 
 pytestmark = [pytest.mark.dontusefix]
 
+
+# test different data types against each function
+def test_leer_linea_txt_numeric_field():
+    line = "1234567890"
+    format_spec = [("field", 10, "Numerico")]
+    result = leer_linea_txt(line, format_spec)
+    assert result == {"field": 1234567890}
+
+def test_leer_linea_txt_alphanumeric_field():
+    line = "Hello World"
+    format_spec = [("field", 12, "Alfanumerico")]
+    result = leer_linea_txt(line, format_spec)
+    assert result == {"field": "Hello World"}
+
+def test_leer_linea_txt_import_field():
+    line = "12.34       "
+    format_spec = [("field", 12, "Importe")]
+    result = leer_linea_txt(line, format_spec)
+    assert result == {"field": 12.34}
+
+def test_escribir_linea_txt_numeric_field():
+    data = {"field": 1234567890}
+    format_spec = [("field", 10, "Numerico")]
+    result = escribir_linea_txt(data, format_spec)
+    assert result.strip() == "1234567890"
+
+def test_escribir_linea_txt_alphanumeric_field():
+    data = {"field": "Hello World"}
+    format_spec = [("field", 12, "Alfanumerico")]
+    result = escribir_linea_txt(data, format_spec)
+    assert result.strip() == "Hello World"
+
+def test_escribir_linea_txt_import_field():
+    data = {"field": 12.34}
+    format_spec = [("field", 12, "Importe")]
+    result = escribir_linea_txt(data, format_spec)
+    assert result.strip() == "000000001234"
