@@ -81,8 +81,22 @@ def test_main_prueba():
     sys.argv.append("--prueba")
     main()
 
+# def test_main_mostrar(mocker):
+#     mocker.patch("os.system")
+#     sys.argv = []
+#     archivo = "qr.png"
+#     sys.argv.append("--archivo")
+#     sys.argv.append(archivo)
+#     sys.argv.append("--mostrar")
+#     main()
+#     if(sys.platform == 'linux2' or sys.platform == 'linux'):
+#         os.system.assert_called_with("eog " "%s" "" % archivo)
+
+from test_wslsp import open_file  # Make sure to import open_file
+
 def test_main_mostrar(mocker):
     mocker.patch("os.system")
+    mocker.patch("os.startfile", new=open_file, create=True)  # Add this line
     sys.argv = []
     archivo = "qr.png"
     sys.argv.append("--archivo")
