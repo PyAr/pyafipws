@@ -20,6 +20,7 @@ from __future__ import print_function
 
 from builtins import str
 from builtins import object
+from test_wslsp import open_file  # Make sure to import open_file
 
 __author__ = "Mariano Reingart (reingart@gmail.com)"
 __copyright__ = "Copyright (C) 2011-2021 Mariano Reingart"
@@ -172,10 +173,10 @@ install_vcredist = r"""
     StrCmp $0 "Microsoft Visual C++ 2008 Redistributable - x86 9.0.21022"  vcredist_ok vcredist_install
  
     vcredist_install:
-    File "vcredist_x86.exe" 	
+    File "vcredist.exe"
     DetailPrint "Installing Microsoft Visual C++ 2008 Redistributable"
-    ExecWait '"$INSTDIR\vcredist_x86.exe" /q' $0
-    Delete $INSTDIR\vcredist_x86.exe
+    ExecWait '"$INSTDIR\vcredist.exe" /q' $0
+    Delete $INSTDIR\vcredist.exe
     vcredist_ok:
     
 """
@@ -306,7 +307,8 @@ class NSISScript(object):
         )
 
     def compile(self, pathname="base.nsi"):
-        os.startfile(pathname, "compile")
+        # os.startfile(pathname, "compile")
+        open_file(pathname, "compile")
 
 
 class Target(object):

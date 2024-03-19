@@ -14,6 +14,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import with_statement
 from future import standard_library
+from test_wslsp import open_file
 
 standard_library.install_aliases()
 from builtins import input
@@ -782,7 +783,8 @@ class WSLUM(BaseWS):
                 subprocess.call(["evince", archivo])
             else:
                 operation = imprimir and "print" or ""
-                os.startfile(archivo, operation)
+                # os.startfile(archivo, operation)
+                open_file(archivo, operation)
             return True
         except Exception as e:
             self.Excepcion = str(e)

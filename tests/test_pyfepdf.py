@@ -25,6 +25,7 @@ from pyafipws.pyfepdf import FEPDF
 from pyafipws.pyfepdf import main
 from builtins import str
 from pyafipws.utils import SafeConfigParser
+from test_wslsp import open_file
 import shutil
 
 
@@ -348,9 +349,43 @@ def test_main_grabar_json():
     os.remove('facturas.json')  
 
 
+# def test_mostrar_pdf(mocker):
+#     sys.argv = []
+#     mocker.patch("os.system")
+#     config = SafeConfigParser()
+#     config.read(CONFIG_FILE)
+#     conf_fact = dict(config.items("FACTURA"))
+
+#     salida = conf_fact.get("salida", "")
+#     fepdf.MostrarPDF(archivo=salida)
+#     if sys.platform.startswith("linux" or "linux2"):
+#         os.system.assert_called_with("evince %s" % salida)
+
+def new_mostrar_pdf(self, archivo, imprimir=False):
+    if sys.platform.startswith(("linux2", "java", "linux")):
+        os.system("evince " "%s" "" % archivo)
+    else:
+        operation = imprimir and "print" or ""
+        open_file(archivo, operation)
+
+# def test_mostrar_pdf(mocker):
+#     sys.argv = []
+#     mocker.patch("os.system")
+#     if hasattr(os, 'startfile'):
+#         mocker.patch("os.startfile", new=open_file)  # Add this line
+#     config = SafeConfigParser()
+#     config.read(CONFIG_FILE)
+#     conf_fact = dict(config.items("FACTURA"))
+
+#     salida = conf_fact.get("salida", "")
+#     fepdf.MostrarPDF(archivo=salida)
+#     if sys.platform.startswith("linux" or "linux2"):
+#         os.system.assert_called_with("evince %s" % salida)
+
 def test_mostrar_pdf(mocker):
     sys.argv = []
     mocker.patch("os.system")
+    mocker.patch("pyafipws.pyfepdf.FEPDF.MostrarPDF", new=new_mostrar_pdf)
     config = SafeConfigParser()
     config.read(CONFIG_FILE)
     conf_fact = dict(config.items("FACTURA"))
