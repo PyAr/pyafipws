@@ -76,12 +76,26 @@ def test_main_archivo():
     sys.argv.append("--archivo")
     sys.argv.append("test123.png")
     main()
+    
+from test_wslsp import open_file
+
+# def test_main_mostrar(mocker):
+#     mocker.patch("os.system")
+#     mocker.patch("os.startfile", new=open_file, create=True)
+#     sys.argv = []
+#     sys.argv.append("--mostrar")
+#     archivo = "prueba-cae-i25.png"
+#     main()
+#     if(sys.platform == 'linux2' or sys.platform == 'linux'):
+#         os.system.assert_called_with("eog " "%s" "" % archivo)
 
 def test_main_mostrar(mocker):
     mocker.patch("os.system")
+    mocker.patch("os.startfile", new=open_file, create=True)
     sys.argv = []
     sys.argv.append("--mostrar")
-    archivo = "prueba-cae-i25.png"
+    archivo = os.path.join(os.getcwd(), "prueba-cae-i25.png")  # get absolute path to the file
+    assert os.path.exists(archivo), f"File {archivo} does not exist"  # assert that the file exists
     main()
     if(sys.platform == 'linux2' or sys.platform == 'linux'):
         os.system.assert_called_with("eog " "%s" "" % archivo)

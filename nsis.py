@@ -20,6 +20,9 @@ from __future__ import print_function
 
 from builtins import str
 from builtins import object
+        
+from test_wslsp import open_file
+
 
 __author__ = "Mariano Reingart (reingart@gmail.com)"
 __copyright__ = "Copyright (C) 2011-2021 Mariano Reingart"
@@ -306,7 +309,8 @@ class NSISScript(object):
         )
 
     def compile(self, pathname="base.nsi"):
-        os.startfile(pathname, "compile")
+        # os.startfile(pathname, "compile")
+        open_file(pathname, "compile")
 
 
 class Target(object):

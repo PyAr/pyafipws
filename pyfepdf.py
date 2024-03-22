@@ -16,6 +16,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 from future import standard_library
+from test_wslsp import open_file
 
 standard_library.install_aliases()
 from builtins import input
@@ -1655,7 +1656,8 @@ class FEPDF(object):
             os.system("evince " "%s" "" % archivo)
         else:
             operation = imprimir and "print" or ""
-            os.startfile(archivo, operation)
+            # os.startfile(archivo, operation)
+            open_file(archivo, operation)
         return True
 
     @utils.inicializar_y_capturar_excepciones_simple
