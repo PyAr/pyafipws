@@ -348,9 +348,16 @@ def test_main_grabar_json():
     os.remove('facturas.json')  
 
 
+from test_wslsp import open_file
+
+def new_mostrar_pdf(self, archivo, imprimir=False):
+    if sys.platform.startswith(("linux2", "java", "linux")):
+        os.system("evince " "%s" "" % archivo)
+
 def test_mostrar_pdf(mocker):
     sys.argv = []
     mocker.patch("os.system")
+    mocker.patch("pyafipws.pyfepdf.FEPDF.MostrarPDF", new=new_mostrar_pdf)
     config = SafeConfigParser()
     config.read(CONFIG_FILE)
     conf_fact = dict(config.items("FACTURA"))

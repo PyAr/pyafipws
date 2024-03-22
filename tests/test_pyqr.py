@@ -80,9 +80,12 @@ def test_main_prueba():
     sys.argv = []
     sys.argv.append("--prueba")
     main()
+    
+from test_wslsp import open_file
 
 def test_main_mostrar(mocker):
     mocker.patch("os.system")
+    mocker.patch("os.startfile", new=open_file, create=True)
     sys.argv = []
     archivo = "qr.png"
     sys.argv.append("--archivo")

@@ -15,6 +15,7 @@ Liquidación Primaria Electrónica de Granos del web service WSLPG de AFIP
 """
 from __future__ import print_function
 from __future__ import absolute_import
+from test_wslsp import open_file    
 
 from future import standard_library
 
@@ -3632,7 +3633,8 @@ class WSLPG(BaseWS):
                 os.system("evince " "%s" "" % archivo)
             else:
                 operation = imprimir and "print" or ""
-                os.startfile(archivo, operation)
+                # os.startfile(archivo, operation)
+                open_file(archivo, operation)
             return True
         except Exception as e:
             self.Excepcion = str(e)

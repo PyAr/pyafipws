@@ -79,6 +79,7 @@ import pprint
 from pysimplesoap.client import SoapFault
 from fpdf import Template
 from pyafipws import utils
+from test_wslsp import open_file
 
 # importo funciones compartidas:
 from pyafipws.utils import (
@@ -782,7 +783,8 @@ class WSLUM(BaseWS):
                 subprocess.call(["evince", archivo])
             else:
                 operation = imprimir and "print" or ""
-                os.startfile(archivo, operation)
+                # os.startfile(archivo, operation)
+                open_file(archivo, operation)
             return True
         except Exception as e:
             self.Excepcion = str(e)

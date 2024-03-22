@@ -14,6 +14,7 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
+from test_wslsp import open_file
 
 from builtins import str
 from builtins import range
@@ -259,7 +260,8 @@ def main():
         elif sys.platform == "linux2" or sys.platform == "linux":
             os.system("eog " "%s" "" % archivo)
         else:
-            os.startfile(archivo)
+            # os.startfile(archivo)
+            open_file(archivo)
 
 if __name__ == "__main__":
     main()

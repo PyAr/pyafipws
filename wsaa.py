@@ -14,6 +14,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import unicode_literals
+from test_wslsp import open_file
 
 # Basado en wsaa-client.php de Gerardo Fisanotti - DvSHyS/DiOPIN/AFIP - 13-apr-07
 # Definir WSDL, CERT, PRIVATEKEY, PASSPHRASE, SERVICE, WSAAURL
@@ -641,7 +642,8 @@ def main():
             for linea in open(pedido_cert, "r"):
                 txt.write("{}".format(linea))
             txt.close()
-            os.startfile(pedido_cert + ".txt")
+            # os.startfile(pedido_cert + ".txt")
+            open_file(pedido_cert + ".txt")
     else:
 
         # Leer argumentos desde la linea de comando (si no viene tomar default)

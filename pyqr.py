@@ -14,6 +14,7 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 from builtins import object
+from test_wslsp import open_file
 
 __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2020-2021 Mariano Reingart"
@@ -288,7 +289,8 @@ def main():
         elif sys.platform == "linux2" or sys.platform == "linux":
             os.system("eog " "%s" "" % pyqr.Archivo)
         else:
-            os.startfile(pyqr.Archivo)
+            # os.startfile(pyqr.Archivo)
+            open_file(pyqr.Archivo)
 
     return url
 

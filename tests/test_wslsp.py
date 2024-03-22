@@ -19,6 +19,8 @@ __copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
 __license__ = "GPL 3.0"
 
 import os
+import subprocess
+import platform
 import pytest
 from pyafipws.wsaa import WSAA
 from pyafipws.wslsp import WSLSP, main
@@ -29,6 +31,15 @@ import sys
 __WSDL__ = "https://fwshomo.afip.gov.ar/wslsp/LspService?wsdl"
 __obj__ = WSLSP()
 __service__ = "wslsp"
+
+def open_file(path, operation=""):
+    try:
+        if platform.system() == "Windows":
+            os.startfile(path, operation)
+        else:
+            subprocess.call(["xdg-open", path])
+    except Exception as e:
+        print(f"Failed to open file {path} with error: {e}")
 
 CUIT = os.environ["CUIT"]
 CERT = "reingart.crt"
