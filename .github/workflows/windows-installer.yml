@@ -29,6 +29,10 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools wheel
         python -m pip install --upgrade cachetools pefile
+    - name: Change requirements.txt on 32bit python
+      if: matrix.targetplatform == 'x86'
+      run: |
+        python -c "with open('requirements.txt', 'r') as file: content = file.read(); content = content.replace('Pillow>=2.0.0', 'Pillow<=9.5.0'); f = open('requirements.txt', 'w'); f.write(content)"
     - name: Install production dependencies
       run: |
         pip install -r requirements.txt
