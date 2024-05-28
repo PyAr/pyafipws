@@ -31,29 +31,19 @@ def leer(fn="entrada.csv", delimiter=";"):
     ext = os.path.splitext(fn)[1].lower()
     items = []
     if ext == ".csv":
-        csvfile = open(fn, "rb")
-        # deducir dialecto y delimitador
-        try:
-            dialect = csv.Sniffer().sniff(csvfile.read(256), delimiters=[";", ","])
-        except csv.Error:
-            dialect = csv.excel
-            dialect.delimiter = delimiter
-        csvfile.seek(0)
-        csv_reader = csv.reader(csvfile, dialect)
-        for row in csv_reader:
-            r = []
-            for c in row:
-                if isinstance(c, basestring):
-                    c = c.strip()
-                r.append(c)
-            items.append(r)
+        with open(fn, "r") as csvfile:
+            csv_reader = csv.reader(csvfile, delimiter=delimiter)
+            next(csv_reader)  # Skip the header row
+            for row in csv_reader:
+                items.append(row)
     elif ext == ".xlsx":
         # extraigo los datos de la planilla Excel
         from openpyxl import load_workbook
 
+
         wb = load_workbook(filename=fn)
-        ws1 = wb.get_active_sheet()
-        for row in ws1.rows:
+        ws1 = wb.active
+        for row in ws1.iter_rows(min_row=2):  # Start from the second row (skip header)
             fila = []
             for cell in row:
                 fila.append(cell.value)
