@@ -1137,7 +1137,7 @@ def main():
                 assert wsltv.GetParametro("receptor", "domicilio") == u"Calle 1"
                 assert (
                     wsltv.GetParametro("receptor", "razon_social")
-                    == u'CUIT PF de Prueba genérica'
+                    == u"CUIT PF de Prueba genérica"
                 )
                 assert (
                     wsltv.GetParametro(
