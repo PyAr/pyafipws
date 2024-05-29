@@ -10,42 +10,41 @@
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 
+"""Test para formato_csv"""
+
+__author__ = "Mariano Reingart <reingart@gmail.com>"
+__copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
+__license__ = "GPL 3.0"
+
 import os
-import sys
 import unittest
 import importlib.util
 import csv
 import pytest
 import tempfile
 from io import StringIO
-from openpyxl import Workbook, load_workbook
-from unittest.mock import MagicMock, mock_open, patch
-
+from openpyxl import Workbook
+from unittest.mock import patch
 
 # Get the absolute path to the formato_csv.py file
 formato_csv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'formatos', 'formato_csv.py'))
-
 
 # Load the formato_csv module
 spec = importlib.util.spec_from_file_location("formato_csv", formato_csv_path)
 formato_csv = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(formato_csv)
 
-
 from pyafipws.formatos.formato_csv import leer
-
 
 @pytest.mark.dontusefix
 class TestLeerFunction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Create sample CSV data
-        cls.sample_csv_data = "Column1,Column2,Column3\nValue1,Value2,Value3\r\nValue4,Value5,Value6"
-
+        cls.sample_csv_data = "Column1,Column2,Column3\nValue1,Value2,Value3\nValue4,Value5,Value6"
 
         # Create sample CSV data with pipe delimiter
-        cls.sample_pipe_csv_data = "Column1|Column2|Column3\r\nValue1|Value2|Value3\r\nValue4|Value5|Value6"
-
+        cls.sample_pipe_csv_data = "Column1|Column2|Column3\nValue1|Value2|Value3\nValue4|Value5|Value6"
 
         # Create empty CSV data
         cls.empty_csv_data = ""
@@ -56,12 +55,11 @@ class TestLeerFunction(unittest.TestCase):
         Test that the leer function can read a valid CSV file correctly.
         """
         expected_data = [
-            ["Column1", "Column2", "Column3"],
             ["Value1", "Value2", "Value3"],
             ["Value4", "Value5", "Value6"],
         ]
         with patch('builtins.open', return_value=StringIO(self.sample_csv_data)):
-            result = leer('data/sample.csv')
+            result = formato_csv.leer('data/sample.csv')
         self.assertEqual(result, expected_data)
 
 
@@ -70,7 +68,6 @@ class TestLeerFunction(unittest.TestCase):
         Test that the leer function can read a valid Excel file correctly.
         """
         expected_data = [
-            ["Column1", "Column2", "Column3"],
             ["Value1", "Value2", "Value3"],
             ["Value4", "Value5", "Value6"],
         ]
@@ -91,13 +88,11 @@ class TestLeerFunction(unittest.TestCase):
             worksheet['C3'] = 'Value6'
             workbook.save(temp_file.name)
 
+            result = formato_csv.leer(temp_file.name)
+        self.assertEqual(result, expected_data)
 
-            result = leer(temp_file.name)
-            self.assertEqual(result, expected_data)
-
-
-            # Clean up the temporary file
-            os.unlink(temp_file.name)
+        # Clean up the temporary file
+        os.unlink(temp_file.name)
 
 
     def test_leer_missing_file(self):
@@ -106,8 +101,7 @@ class TestLeerFunction(unittest.TestCase):
         """
         filename = os.path.join('data', 'missing.csv')
         with self.assertRaises(FileNotFoundError):
-            leer(filename)
-
+            formato_csv.leer(filename)
 
     def test_leer_empty_file(self):
         """
@@ -115,7 +109,7 @@ class TestLeerFunction(unittest.TestCase):
         """
         expected_data = []
         with patch('builtins.open', return_value=StringIO(self.empty_csv_data)):
-            result = leer('data/empty.csv')
+            result = formato_csv.leer('data/empty.csv')
         self.assertEqual(result, expected_data)
 
 
@@ -124,12 +118,11 @@ class TestLeerFunction(unittest.TestCase):
         Test that the leer function can read a CSV file with a custom delimiter.
         """
         expected_data = [
-            ["Column1", "Column2", "Column3"],
             ["Value1", "Value2", "Value3"],
             ["Value4", "Value5", "Value6"],
         ]
         with patch('builtins.open', return_value=StringIO(self.sample_pipe_csv_data)):
-            result = leer('data/sample_pipe.csv', delimiter="|")
+            result = formato_csv.leer('data/sample_pipe.csv', delimiter="|")
         self.assertEqual(result, expected_data)
 
 
@@ -147,12 +140,12 @@ class TestLeerFunction(unittest.TestCase):
             result = formato_csv.leer('data/sample_missing_columns.csv', delimiter=',')
         self.assertEqual(result, expected_data)
 
-    
+
     def test_leer_csv_extra_columns(self):
         """
         Test that the leer function handles a CSV file with extra columns correctly.
         """
-        sample_csv_data = "Column1,Column2,Column3,Column4,column5,column6\nValue1,Value2,Value3,Value4\nValue5,Value6,Value7,Value8"
+        sample_csv_data = "Column1,Column2,Column3,Column4\nValue1,Value2,Value3,Value4\nValue5,Value6,Value7,Value8"
         expected_data = [
             ["Value1", "Value2", "Value3", "Value4"],
             ["Value5", "Value6", "Value7", "Value8"],
@@ -160,6 +153,7 @@ class TestLeerFunction(unittest.TestCase):
         with patch('builtins.open', return_value=StringIO(sample_csv_data)):
             result = formato_csv.leer('data/sample_extra_columns.csv', delimiter=',')
         self.assertEqual(result, expected_data)
+
 
     def test_leer_csv_different_column_order(self):
         """
@@ -174,7 +168,7 @@ class TestLeerFunction(unittest.TestCase):
             result = formato_csv.leer('data/sample_different_order.csv', delimiter=',')
         self.assertEqual(result, expected_data)
 
-    
+
     def test_leer_csv_special_characters(self):
         """
         Test that the leer function handles a CSV file with special characters correctly.

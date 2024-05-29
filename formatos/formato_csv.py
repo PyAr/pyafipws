@@ -24,33 +24,42 @@ __license__ = "LGPL-3.0-or-later"
 import csv
 from decimal import Decimal
 import os
-
+from openpyxl import load_workbook
 
 def leer(fn="entrada.csv", delimiter=";"):
-    "Analiza un archivo CSV y devuelve un diccionario (aplanado)"
+    "Analiza un archivo CSV y devuelve una lista de listas con los datos"
     ext = os.path.splitext(fn)[1].lower()
     items = []
+    
     if ext == ".csv":
-        with open(fn, "r") as csvfile:
-            csv_reader = csv.reader(csvfile, delimiter=delimiter)
-            next(csv_reader)  # Skip the header row
+        with open(fn, "r", encoding="utf-8") as csvfile:
+            try:
+                dialect = csv.Sniffer().sniff(csvfile.read(256), delimiters=[delimiter, ","])
+            except csv.Error:
+                dialect = csv.excel
+                dialect.delimiter = delimiter
+            csvfile.seek(0)
+            csv_reader = csv.reader(csvfile, dialect)
+            header_skipped = False
             for row in csv_reader:
-                items.append(row)
+                if not header_skipped:
+                    header_skipped = True
+                    continue
+                items.append([c.strip() if isinstance(c, str) else c for c in row])
+    
     elif ext == ".xlsx":
-        # extraigo los datos de la planilla Excel
-        from openpyxl import load_workbook
-
-
         wb = load_workbook(filename=fn)
         ws1 = wb.active
-        for row in ws1.iter_rows(min_row=2):  # Start from the second row (skip header)
-            fila = []
-            for cell in row:
-                fila.append(cell.value)
-            items.append(fila)
+        header_skipped = False
+        for row in ws1.iter_rows(values_only=True):
+            if not header_skipped:
+                header_skipped = True
+                continue
+            items.append([cell for cell in row])
+    
     return items
     # TODO: return desaplanar(items)
-
+    
 
 def aplanar(regs):
     "Convierte una estructura python en planilla CSV (PyRece)"
