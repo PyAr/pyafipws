@@ -18,7 +18,7 @@ clean:
 # This command first copies all the configuration settings from the conf folder
 # to the main folder and next it downloads test key and digital certificate that 
 # that can be used for testing and lastly the python module is used to decompress
-# the files
+# the files.
 get-auth:
 	cp conf/*.ini .
 	curl -o reingart.zip https://www.sistemasagiles.com.ar/soft/pyafipws/reingart.zip
