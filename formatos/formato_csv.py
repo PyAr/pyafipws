@@ -86,64 +86,63 @@ def aplanar(regs):
         if reg.get("cbte_nro"):
             fila["cbt_numero"] = reg["cbte_nro"]
 
-        for i, det in enumerate(reg["detalles"]):
-            li = i + 1
+        for i, det in enumerate(reg.get("detalles", []), start=1):
             fila.update(
                 {
-                    "codigo%s" % li: det.get("codigo", ""),
-                    "descripcion%s" % li: det.get("ds", ""),
-                    "umed%s" % li: det.get("umed"),
-                    "cantidad%s" % li: det.get("qty"),
-                    "precio%s" % li: det.get("precio"),
-                    "importe%s" % li: det.get("importe"),
-                    "iva_id%s" % li: det.get("iva_id"),
-                    "imp_iva%s" % li: det.get("imp_iva"),
-                    "bonif%s" % li: det.get("bonif"),
-                    "numero_despacho%s" % li: det.get("despacho"),
-                    "dato_a%s" % li: det.get("dato_a"),
-                    "dato_b%s" % li: det.get("dato_b"),
-                    "dato_c%s" % li: det.get("dato_c"),
-                    "dato_d%s" % li: det.get("dato_d"),
-                    "dato_e%s" % li: det.get("dato_e"),
+                    "codigo%s" % i: det.get("codigo", ""),
+                    "descripcion%s" % i: det.get("ds", ""),
+                    "umed%s" % i: det.get("umed"),
+                    "cantidad%s" % i: det.get("qty"),
+                    "precio%s" % i: det.get("precio"),
+                    "importe%s" % i: det.get("importe"),
+                    "iva_id%s" % i: det.get("iva_id"),
+                    "imp_iva%s" % i: det.get("imp_iva"),
+                    "bonif%s" % i: det.get("bonif"),
+                    "numero_despacho%s" % i: det.get("despacho"),
+                    "dato_a%s" % i: det.get("dato_a"),
+                    "dato_b%s" % i: det.get("dato_b"),
+                    "dato_c%s" % i: det.get("dato_c"),
+                    "dato_d%s" % i: det.get("dato_d"),
+                    "dato_e%s" % i: det.get("dato_e"),
                 }
             )
-        for i, iva in enumerate(reg["ivas"]):
-            li = i + 1
+
+        for i, iva in enumerate(reg.get("ivas", []), start=1):
             fila.update(
                 {
-                    "iva_id_%s" % li: iva["iva_id"],
-                    "iva_base_imp_%s" % li: iva["base_imp"],
-                    "iva_importe_%s" % li: iva["importe"],
+                    "iva_id_%s" % i: iva.get("iva_id"),
+                    "iva_base_imp_%s" % i: iva.get("base_imp"),
+                    "iva_importe_%s" % i: iva.get("importe"),
                 }
             )
-        for i, tributo in enumerate(reg["tributos"]):
-            li = i + 1
+
+        for i, tributo in enumerate(reg.get("tributos", []), start=1):
             fila.update(
                 {
-                    "tributo_id_%s" % li: tributo["tributo_id"],
-                    "tributo_base_imp_%s" % li: tributo["base_imp"],
-                    "tributo_desc_%s" % li: tributo["desc"],
-                    "tributo_alic_%s" % li: tributo["alic"],
-                    "tributo_importe_%s" % li: tributo["importe"],
+                    "tributo_id_%s" % i: tributo.get("tributo_id"),
+                    "tributo_base_imp_%s" % i: tributo.get("base_imp"),
+                    "tributo_desc_%s" % i: tributo.get("desc"),
+                    "tributo_alic_%s" % i: tributo.get("alic"),
+                    "tributo_importe_%s" % i: tributo.get("importe"),
                 }
             )
-        for i, opcional in enumerate(reg.get("opcionales", [])):
-            li = i + 1
+
+        for i, opcional in enumerate(reg.get("opcionales", []), start=1):
             fila.update(
                 {
-                    "opcional_id_%s" % li: opcional["opcional_id"],
-                    "opcional_valor_%s" % li: opcional["valor"],
+                    "opcional_id_%s" % i: opcional.get("opcional_id"),
+                    "opcional_valor_%s" % i: opcional.get("valor"),
                 }
             )
-        for i, cbte_asoc in enumerate(reg.get("cbtes_asoc", [])):
-            li = i + 1
+
+        for i, cbte_asoc in enumerate(reg.get("cbtes_asoc", []), start=1):
             fila.update(
                 {
-                    "cbte_asoc_tipo_%s" % li: cbte_asoc["cbte_tipo"],
-                    "cbte_asoc_pto_vta_%s" % li: cbte_asoc["cbte_punto_vta"],
-                    "cbte_asoc_nro_%s" % li: cbte_asoc["cbte_nro"],
-                    "cbte_asoc_cuit_%s" % li: cbte_asoc["cbte_cuit"],
-                    "cbte_asoc_fecha_%s" % li: cbte_asoc["cbte_fecha"],
+                    "cbte_asoc_tipo_%s" % i: cbte_asoc.get("cbte_tipo"),
+                    "cbte_asoc_pto_vta_%s" % i: cbte_asoc.get("cbte_punto_vta"),
+                    "cbte_asoc_nro_%s" % i: cbte_asoc.get("cbte_nro"),
+                    "cbte_asoc_cuit_%s" % i: cbte_asoc.get("cbte_cuit"),
+                    "cbte_asoc_fecha_%s" % i: cbte_asoc.get("cbte_fecha"),
                 }
             )
 
@@ -187,18 +186,22 @@ def aplanar(regs):
         "numero_remito",
         "obs_generales",
         "obs_comerciales",
+        "forma_pago",
+        "pdf",
     ]
 
     # filtro y ordeno las columnas
     l = [k for f in filas for k in list(f.keys())]
     s = set(l) - set(cols)
-    cols = cols + list(s)
+    cols.extend(sorted(s))
 
     ret = [cols]
     for fila in filas:
         ret.append([fila.get(k) for k in cols])
 
     return ret
+
+
 
 
 def desaplanar(filas):

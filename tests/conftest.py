@@ -11,6 +11,7 @@
 # for more details.
 
 import os
+import json
 import pytest
 from pyafipws.wsaa import WSAA
 
