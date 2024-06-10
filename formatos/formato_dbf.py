@@ -142,9 +142,9 @@ def leer(archivos=None, carpeta=None):
                 v = d.get(nombre)
                 r[clave] = v
             # agrego
-            if formato == ENCABEZADO:
-                r.update(
-                    {
+            if nombre == "Encabezado":
+                if r["id"] not in regs:
+                    regs[r["id"]] = {
                         "detalles": [],
                         "ivas": [],
                         "tributos": [],
@@ -152,20 +152,19 @@ def leer(archivos=None, carpeta=None):
                         "cbtes_asoc": [],
                         "datos": [],
                     }
-                )
-                regs[r["id"]] = r
+                regs[r["id"]].update(r)
             else:
-                regs[r["id"]][subclave].append(r)
-
+                if r["id"] in regs:
+                    regs[r["id"]][subclave].append(r)
     return regs
 
 
 def escribir(regs, archivos=None, carpeta=None):
-    "Grabar en talbas dbf la lista de diccionarios con la factura"
+    "Grabar en tablas dbf la lista de diccionarios con la factura"
     if DEBUG:
         print("Creando DBF...")
-    if not archivos:
-        filenames = {}
+    if archivos is None:
+        archivos = {}
 
     for reg in regs:
         formatos = [
@@ -209,7 +208,7 @@ def escribir(regs, archivos=None, carpeta=None):
                         else:
                             v = str(v)
                     r[dar_nombre_campo(clave)] = v
-                registro = tabla.append(r)
+                tabla.append(r)
             tabla.close()
 
 

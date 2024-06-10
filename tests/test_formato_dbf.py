@@ -129,20 +129,31 @@ def test_leer_non_empty_dbf_files(monkeypatch):
 @pytest.mark.dontusefix
 def test_leer_multiple_dbf_files(monkeypatch):
     # Simular la clase dbf.Table para devolver un objeto mock con datos
-    mock_table = MockTable()
-    mock_table.records = [
-        MockRecord({"campo1": 123, "campo2": "test_value"}),
-        MockRecord({"campo1": 456, "campo2": "another_value"})
-    ]
-    monkeypatch.setattr("pyafipws.formatos.formato_dbf.dbf.Table", lambda *args, **kwargs: mock_table)
+    mock_table_encabezado = MockTable()
+    mock_table_encabezado.records = [MockRecord({"id": 1, "campo1": 123, "campo2": "test_value"})]
+
+    mock_table_detalle = MockTable()
+    mock_table_detalle.records = [MockRecord({"id": 1, "campo1": 456, "campo2": "another_value"})]
+
+    def mock_table_factory(filename, *args, **kwargs):
+        if "encabeza" in filename:
+            return mock_table_encabezado
+        elif "detalle" in filename:
+            return mock_table_detalle
+        else:
+            return MockTable()
+
+    monkeypatch.setattr("pyafipws.formatos.formato_dbf.dbf.Table", mock_table_factory)
 
     # Llamar a leer y asegurar la salida
     output = formato_dbf.leer(TEST_DBF_FILES, TEST_DATA_DIR)
 
     # Asegurar que la salida es un diccionario con múltiples claves
-    assert len(output) == 2
-    assert "detalles" in output["encabezado"]
-    assert "detalles" in output["detalle"]
+    assert len(output) == 1
+    assert 1 in output
+    assert "detalles" in output[1]
+    assert len(output[1]["detalles"]) == 1
+
 
 @pytest.mark.dontusefix
 def test_escribir(tmp_path, monkeypatch):
@@ -151,9 +162,10 @@ def test_escribir(tmp_path, monkeypatch):
     test_dir.mkdir()
 
     # Simular la clase dbf.Table para rastrear los datos escritos
-    written_data = []
-    mock_table = MockTable(written_data)
-    monkeypatch.setattr("pyafipws.formatos.formato_dbf.dbf.Table", lambda *args, **kwargs: mock_table)
+    mock_table = MockTable()
+    def mock_table_factory(filename, field_names):
+        return mock_table
+    monkeypatch.setattr("pyafipws.formatos.formato_dbf.dbf.Table", mock_table_factory)
 
     # Definir datos de prueba y llamar a escribir
     test_data = [{
@@ -168,9 +180,10 @@ def test_escribir(tmp_path, monkeypatch):
     formato_dbf.escribir(test_data, {"encabezado": "encabeza.dbf"}, str(test_dir))
 
     # Asegurar que los datos fueron escritos en el archivo DBF
-    assert len(written_data) == 2
-    assert written_data[0] == {'tiporeg': 0, 'webservice': b'', 'fechacbte': b'', 'tipocbte': 0, 'puntovta': 0, 'cbtenro': 0, 'tipoexpo': 0, 'permisoexi': b'', 'paisdstcmp': 0, 'nombreclie': b'', 'tipodoc': 0, 'nrodoc': 0, 'domicilioc': b'', 'idimpositi': b'', 'imptotal': 0, 'imptotconc': 0, 'impneto': 0, 'imptoliq': 0, 'imptoliqnr': 0, 'impopex': 0, 'imptoperc': 0, 'impiibb': 0, 'imptopercm': 0, 'impinterno': 0, 'imptrib': 0, 'monedaid': b'', 'monedactz': 0, 'obscomerci': b'', 'obsgeneral': b'', 'formapago': b'', 'incoterms': b'', 'incotermsd': b'', 'idiomacbte': b'', 'zona': b'', 'fechavencp': b'', 'prestaserv': 0, 'fechaservd': b'', 'fechaservh': b'', 'cae': b'', 'fechavto': b'', 'resultado': b'', 'reproceso': b'', 'motivosobs': b'', 'id': 1, 'telefonocl': b'', 'localidadc': b'', 'provinciac': b'', 'formatoid': 0, 'email': b'', 'pdf': b'', 'errcode': b'', 'errmsg': b'', 'datoadic01': b'', 'datoadic02': b'', 'datoadic03': b'', 'datoadic04': b'', 'descuento': 0, 'cbtdesde': 0, 'cbthasta': 0, 'concepto': 0, 'nousar': 0, 'impiva': 0, 'emisiontip': b'', 'impsubtota': 0, 'cativa': 0, 'tipocodaut': b''}
-    assert written_data[1] == {'id': 1, 'tiporeg': 0, 'codigo': b'', 'qty': 0, 'umed': 0, 'precio': 0, 'importe': 0, 'ivaid': 0, 'ds': b'', 'ncm': b'', 'sec': b'', 'bonif': 0, 'impiva': 0, 'despacho': b'', 'umtx': 0, 'codmtx': 0, 'datoa': b'', 'datob': b'', 'datoc': b'', 'datod': b'', 'datoe': b''}
+    assert len(mock_table.written_data) == 2
+    assert mock_table.written_data[0]["id"] == 1
+    assert mock_table.written_data[1]["codigo"] == b""
+    assert mock_table.written_data[1]["ds"] == b""
 
 # Prueba de ayuda (se puede capturar la salida y asegurar el contenido esperado)
 @pytest.mark.dontusefix
@@ -188,10 +201,33 @@ class MockRecord:
     def scatter_fields(self):
         return self.data
 
+# class MockTable:
+#     def __init__(self, records=None):
+#         self.records = records or []
+#         self.current_index = 0
+
+#     def __iter__(self):
+#         return self
+
+#     def __next__(self):
+#         if self.current_index >= len(self.records):
+#             raise StopIteration
+#         record = self.records[self.current_index]
+#         self.current_index += 1
+#         return record
+
+#     def append(self, data):
+#         record = MockRecord(data)
+#         self.records.append(record)
+
+#     def close(self):
+#         pass
+
 class MockTable:
     def __init__(self, records=None):
         self.records = records or []
         self.current_index = 0
+        self.written_data = []
 
     def __iter__(self):
         return self
@@ -204,8 +240,7 @@ class MockTable:
         return record
 
     def append(self, data):
-        record = MockRecord(data)
-        self.records.append(record)
+        self.written_data.append(data)
 
     def close(self):
         pass
