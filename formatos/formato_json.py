@@ -37,10 +37,11 @@ def leer(archivo):
                 return []  # Return an empty list if the file is empty or contains only whitespace
             regs = json.loads(content)
             return regs
-    except json.decoder.JSONDecodeError:
-        return []  # Return an empty list if the file is not a valid JSON format
-    except Exception as e:
-        raise RuntimeError("Error al leer archivo JSON: {}".format(str(e)))
+    except json.decoder.JSONDecodeError as e:
+        raise json.decoder.JSONDecodeError("Error al leer archivo JSON: {}".format(str(e)), e.doc, e.pos)
+    except FileNotFoundError as e:
+        raise FileNotFoundError("Error al leer archivo JSON: {}".format(str(e)))
+
 
 
 def escribir(filas, fn="salida.json", **kwargs):
