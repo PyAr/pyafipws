@@ -32,7 +32,7 @@ NULL = None
 
 
 def esquema_sql(tipos_registro, conf={}):
-    from formato_txt import A, N, I
+    from .formato_txt import A, N, I
 
     for tabla, formato in tipos_registro:
         sql = []
