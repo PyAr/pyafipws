@@ -92,16 +92,20 @@ def configurar(schema):
     tablas = {}
     campos = {}
     campos_rev = {}
-    if not schema:
-        for tabla in "encabezado", "detalle", "cmp_asoc", "permiso", "tributo", "iva":
-            tablas[tabla] = tabla
-            campos[tabla] = {"id": "id"}
-            campos_rev[tabla] = dict([(v, k) for k, v in list(campos[tabla].items())])
+    for tabla in "encabezado", "detalle", "cmp_asoc", "permiso", "tributo", "iva":
+        tablas[tabla] = tabla
+        campos[tabla] = {"id": "id"}
+        campos_rev[tabla] = {"id": "id"}
+        if schema and tabla in schema:
+            for campo, valor in schema[tabla].items():
+                campos[tabla][campo] = valor
+                campos_rev[tabla][valor] = campo
     return tablas, campos, campos_rev
 
 
 def ejecutar(cur, sql, params=None):
-    ##print sql, params
+    if DEBUG:
+        print(sql, params)
     if params is None:
         return cur.execute(sql)
     else:
@@ -117,7 +121,8 @@ def max_id(db, schema={}):
     ret = None
     try:
         ejecutar(cur, query)
-        for row in cur:
+        row = cur.fetchone()
+        if row:
             ret = row[0]
         if not ret:
             ret = 0

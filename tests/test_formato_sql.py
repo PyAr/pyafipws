@@ -17,7 +17,8 @@ __copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
 __license__ = "GPL 3.0"
 
 import pytest
-from pyafipws.formatos.formato_sql import esquema_sql
+from unittest.mock import MagicMock, patch
+from pyafipws.formatos.formato_sql import esquema_sql, configurar, ejecutar, max_id, escribir
 from pyafipws.formatos.formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO
 
 @pytest.mark.dontusefix
@@ -287,3 +288,229 @@ class TestFormatoSQL:
             ")\n;"
         ]
         assert list(esquema_sql(tipos_registro, conf)) == expected_output
+    
+
+
+@pytest.mark.dontusefix
+class TestConfigurar:
+    def test_configurar_without_schema(self):
+        # Test configuring without a custom schema
+        schema = {}
+        expected_tablas = {
+            "encabezado": "encabezado",
+            "detalle": "detalle",
+            "cmp_asoc": "cmp_asoc",
+            "permiso": "permiso",
+            "tributo": "tributo",
+            "iva": "iva",
+        }
+        expected_campos = {
+            "encabezado": {"id": "id"},
+            "detalle": {"id": "id"},
+            "cmp_asoc": {"id": "id"},
+            "permiso": {"id": "id"},
+            "tributo": {"id": "id"},
+            "iva": {"id": "id"},
+        }
+        expected_campos_rev = {
+            "encabezado": {"id": "id"},
+            "detalle": {"id": "id"},
+            "cmp_asoc": {"id": "id"},
+            "permiso": {"id": "id"},
+            "tributo": {"id": "id"},
+            "iva": {"id": "id"},
+        }
+        tablas, campos, campos_rev = configurar(schema)
+        assert tablas == expected_tablas
+        assert campos == expected_campos
+        assert campos_rev == expected_campos_rev
+
+    def test_configurar_with_custom_schema(self):
+        # Test configuring with a custom schema
+        schema = {
+            "encabezado": {"nombre": "encabezado_nombre"},
+            "detalle": {"cantidad": "detalle_cantidad"},
+            "cmp_asoc": {"numero": "cmp_asoc_numero"},
+            "permiso": {"destino": "permiso_destino"},
+            "tributo": {"descripcion": "tributo_descripcion"},
+            "iva": {"importe": "iva_importe"},
+        }
+        expected_tablas = {
+            "encabezado": "encabezado",
+            "detalle": "detalle",
+            "cmp_asoc": "cmp_asoc",
+            "permiso": "permiso",
+            "tributo": "tributo",
+            "iva": "iva",
+        }
+        expected_campos = {
+            "encabezado": {"nombre": "encabezado_nombre", "id": "id"},
+            "detalle": {"cantidad": "detalle_cantidad", "id": "id"},
+            "cmp_asoc": {"numero": "cmp_asoc_numero", "id": "id"},
+            "permiso": {"destino": "permiso_destino", "id": "id"},
+            "tributo": {"descripcion": "tributo_descripcion", "id": "id"},
+            "iva": {"importe": "iva_importe", "id": "id"},
+        }
+        expected_campos_rev = {
+            "encabezado": {"encabezado_nombre": "nombre", "id": "id"},
+            "detalle": {"detalle_cantidad": "cantidad", "id": "id"},
+            "cmp_asoc": {"cmp_asoc_numero": "numero", "id": "id"},
+            "permiso": {"permiso_destino": "destino", "id": "id"},
+            "tributo": {"tributo_descripcion": "descripcion", "id": "id"},
+            "iva": {"iva_importe": "importe", "id": "id"},
+        }
+        tablas, campos, campos_rev = configurar(schema)
+        assert tablas == expected_tablas
+        assert campos == expected_campos
+        assert campos_rev == expected_campos_rev
+
+    def test_configurar_with_partial_schema(self):
+        # Test configuring with a partial schema
+        schema = {
+            "encabezado": {"nombre": "encabezado_nombre"},
+            "detalle": {"cantidad": "detalle_cantidad"},
+        }
+        expected_tablas = {
+            "encabezado": "encabezado",
+            "detalle": "detalle",
+            "cmp_asoc": "cmp_asoc",
+            "permiso": "permiso",
+            "tributo": "tributo",
+            "iva": "iva",
+        }
+        expected_campos = {
+            "encabezado": {"nombre": "encabezado_nombre", "id": "id"},
+            "detalle": {"cantidad": "detalle_cantidad", "id": "id"},
+            "cmp_asoc": {"id": "id"},
+            "permiso": {"id": "id"},
+            "tributo": {"id": "id"},
+            "iva": {"id": "id"},
+        }
+        expected_campos_rev = {
+            "encabezado": {"encabezado_nombre": "nombre", "id": "id"},
+            "detalle": {"detalle_cantidad": "cantidad", "id": "id"},
+            "cmp_asoc": {"id": "id"},
+            "permiso": {"id": "id"},
+            "tributo": {"id": "id"},
+            "iva": {"id": "id"},
+        }
+        tablas, campos, campos_rev = configurar(schema)
+        assert tablas == expected_tablas
+        assert campos == expected_campos
+        assert campos_rev == expected_campos_rev
+
+
+    def test_configurar_with_empty_schema(self):
+        # Test configuring with an empty schema
+        schema = {}
+        expected_tablas = {
+            "encabezado": "encabezado",
+            "detalle": "detalle",
+            "cmp_asoc": "cmp_asoc",
+            "permiso": "permiso",
+            "tributo": "tributo",
+            "iva": "iva",
+        }
+        expected_campos = {
+            "encabezado": {"id": "id"},
+            "detalle": {"id": "id"},
+            "cmp_asoc": {"id": "id"},
+            "permiso": {"id": "id"},
+            "tributo": {"id": "id"},
+            "iva": {"id": "id"},
+        }
+        expected_campos_rev = {
+            "encabezado": {"id": "id"},
+            "detalle": {"id": "id"},
+            "cmp_asoc": {"id": "id"},
+            "permiso": {"id": "id"},
+            "tributo": {"id": "id"},
+            "iva": {"id": "id"},
+        }
+        tablas, campos, campos_rev = configurar(schema)
+        assert tablas == expected_tablas
+        assert campos == expected_campos
+        assert campos_rev == expected_campos_rev
+
+    def test_configurar_with_none_schema(self):
+        # Test configuring with a None schema
+        schema = None
+        expected_tablas = {
+            "encabezado": "encabezado",
+            "detalle": "detalle",
+            "cmp_asoc": "cmp_asoc",
+            "permiso": "permiso",
+            "tributo": "tributo",
+            "iva": "iva",
+        }
+        expected_campos = {
+            "encabezado": {"id": "id"},
+            "detalle": {"id": "id"},
+            "cmp_asoc": {"id": "id"},
+            "permiso": {"id": "id"},
+            "tributo": {"id": "id"},
+            "iva": {"id": "id"},
+        }
+        expected_campos_rev = {
+            "encabezado": {"id": "id"},
+            "detalle": {"id": "id"},
+            "cmp_asoc": {"id": "id"},
+            "permiso": {"id": "id"},
+            "tributo": {"id": "id"},
+            "iva": {"id": "id"},
+        }
+        tablas, campos, campos_rev = configurar(schema)
+        assert tablas == expected_tablas
+        assert campos == expected_campos
+        assert campos_rev == expected_campos_rev
+
+
+
+@pytest.mark.dontusefix
+class TestEjecutar:
+    
+    def test_ejecutar_without_params(self, mocker):
+        # Test executing a query without parameters
+        cur = MagicMock()
+        sql = "SELECT * FROM tabla"
+        mocker.patch('pyafipws.formatos.formato_sql.ejecutar', return_value=None)
+        ejecutar(cur, sql)
+        cur.execute.assert_called_once_with(sql)
+
+    def test_ejecutar_with_params(self, mocker):
+        # Test executing a query with parameters
+        cur = MagicMock()
+        sql = "SELECT * FROM tabla WHERE id = ?"
+        params = (1,)
+        mocker.patch('pyafipws.formatos.formato_sql.ejecutar', return_value=None)
+        ejecutar(cur, sql, params)
+        cur.execute.assert_called_once_with(sql, params)
+
+    def test_ejecutar_returns_cursor_execute_result(self, mocker):
+        # Test that ejecutar returns the result of cursor.execute
+        cur = MagicMock()
+        sql = "SELECT * FROM tabla"
+        expected_result = MagicMock()
+        cur.execute.return_value = expected_result
+        result = ejecutar(cur, sql)
+        assert result == expected_result
+
+    def test_ejecutar_prints_sql_and_params_when_debug_true(self, mocker, capsys):
+        # Test that ejecutar prints the SQL query and parameters when DEBUG is True
+        cur = MagicMock()
+        sql = "SELECT * FROM tabla WHERE id = ?"
+        params = (1,)
+        mocker.patch('pyafipws.formatos.formato_sql.DEBUG', True)
+        ejecutar(cur, sql, params)
+        captured = capsys.readouterr()
+        assert captured.out == "SELECT * FROM tabla WHERE id = ? (1,)\n"
+
+    def test_ejecutar_does_not_print_when_debug_false(self, mocker, capsys):
+        # Test that ejecutar does not print anything when DEBUG is False
+        cur = MagicMock()
+        sql = "SELECT * FROM tabla"
+        mocker.patch('pyafipws.formatos.formato_sql.DEBUG', False)
+        ejecutar(cur, sql)
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        
