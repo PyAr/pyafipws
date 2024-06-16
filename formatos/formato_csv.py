@@ -26,11 +26,11 @@ from decimal import Decimal
 import os
 from openpyxl import load_workbook
 
-def leer(fn="entrada.csv", delimiter=";"):
+def leer(fn="entrada.csv", delimiter=";", header=True):
     "Analiza un archivo CSV y devuelve una lista de listas con los datos"
     ext = os.path.splitext(fn)[1].lower()
     items = []
-    
+
     if ext == ".csv":
         with open(fn, "r", encoding="utf-8") as csvfile:
             try:
@@ -40,23 +40,20 @@ def leer(fn="entrada.csv", delimiter=";"):
                 dialect.delimiter = delimiter
             csvfile.seek(0)
             csv_reader = csv.reader(csvfile, dialect)
-            header_skipped = False
+            if header:
+                next(csv_reader, None)  # Skip the header row
             for row in csv_reader:
-                if not header_skipped:
-                    header_skipped = True
-                    continue
                 items.append([c.strip() if isinstance(c, str) else c for c in row])
-    
+
     elif ext == ".xlsx":
         wb = load_workbook(filename=fn)
         ws1 = wb.active
-        header_skipped = False
-        for row in ws1.iter_rows(values_only=True):
-            if not header_skipped:
-                header_skipped = True
-                continue
+        rows = ws1.iter_rows(values_only=True)
+        if header:
+            next(rows, None)  # Skip the header row
+        for row in rows:
             items.append([cell for cell in row])
-    
+
     return items
     # TODO: return desaplanar(items)
     
@@ -341,22 +338,16 @@ def escribir(filas, fn="salida.csv", delimiter=";"):
     "Dado una lista de comprobantes (diccionarios), aplana y escribe"
     ext = os.path.splitext(fn)[1].lower()
     if ext == ".csv":
-        f = open(fn, "wb")
-        csv_writer = csv.writer(f, dialect="excel", delimiter=";")
-        # TODO: filas = aplanar(regs)
-        for fila in filas:
-            # convertir a ISO-8859-1 (evita error de encoding de csv writer):
-            fila = [
-                celda.encode("latin1") if isinstance(celda, str) else celda
-                for celda in fila
-            ]
-            csv_writer.writerow(fila)
-        f.close()
+        with open(fn, "w", newline="") as f:
+            csv_writer = csv.writer(f, dialect="excel", delimiter=delimiter)
+            # TODO: filas = aplanar(regs)
+            for fila in filas:
+                csv_writer.writerow(fila)
     elif ext == ".xlsx":
         from openpyxl import Workbook
 
         wb = Workbook()
-        ws1 = wb.get_active_sheet()
+        ws1 = wb.active
         for fila in filas:
             ws1.append(fila)
         wb.save(filename=fn)
