@@ -133,19 +133,19 @@ def max_id(db, schema={}):
 
 
 def redondear(formato, clave, valor):
-    from formato_txt import A, N, I
+    from pyafipws.formatos.formato_txt import A, N, I
 
     # corregir redondeo (aparentemente sqlite no guarda correctamente los decimal)
     import decimal
 
     try:
-        long = [fmt[1] for fmt in formato if fmt[0] == clave]
+        longitud = [fmt[1] for fmt in formato if fmt[0] == clave]
         tipo = [fmt[2] for fmt in formato if fmt[0] == clave]
         if not tipo:
             return valor
         tipo = tipo[0]
         if DEBUG:
-            print("tipo", tipo, clave, valor, int)
+            print("tipo", tipo, clave, valor, longitud)
         if valor is None:
             return None
         if valor == "":
@@ -158,8 +158,8 @@ def redondear(formato, clave, valor):
             valor = str(valor)
         if isinstance(valor, basestring):
             valor = Decimal(valor)
-        if int and isinstance(int[0], (tuple, list)):
-            decimales = old_div(Decimal("1"), Decimal(10 ** (int[0][1])))
+        if longitud and isinstance(longitud[0], (tuple, list)):
+            decimales = old_div(Decimal("1"), Decimal(10 ** (longitud[0][1])))
         else:
             decimales = Decimal(".01")
         valor1 = valor.quantize(decimales, rounding=decimal.ROUND_DOWN)
@@ -168,10 +168,11 @@ def redondear(formato, clave, valor):
         return valor1
     except Exception as e:
         print("IMPOSIBLE REDONDEAR:", clave, valor, e)
+        return None
 
 
 def escribir(facts, db, schema={}, commit=True):
-    from formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, DATO
+    from .formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, DATO
 
     tablas, campos, campos_rev = configurar(schema)
     cur = db.cursor()
