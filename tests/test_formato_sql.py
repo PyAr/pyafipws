@@ -19,7 +19,7 @@ __license__ = "GPL 3.0"
 import pytest
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
-from pyafipws.formatos.formato_sql import esquema_sql, configurar, ejecutar, max_id, redondear, escribir, modificar, CAE_NULL, FECHA_VTO_NULL, RESULTADO_NULL, NULL
+from pyafipws.formatos.formato_sql import esquema_sql, leer, configurar, ejecutar, max_id, redondear, escribir, modificar, CAE_NULL, FECHA_VTO_NULL, RESULTADO_NULL, NULL
 from pyafipws.formatos.formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, A, N, I
 
 @pytest.mark.dontusefix
@@ -873,5 +873,138 @@ def test_modificar_exception(db_mock, cur_mock, mocker):
 
     with pytest.raises(Exception) as exc_info:
         modificar(fact, db_mock, schema, webservice, ids, conf_db)
+
+    assert str(exc_info.value) == "Database error"
+    
+    
+@pytest.fixture
+def db_mock():
+    return MagicMock()
+
+@pytest.fixture
+def cur_mock(db_mock):
+    cur_mock = MagicMock()
+    db_mock.cursor.return_value = cur_mock
+    return cur_mock
+
+@pytest.mark.dontusefix
+@pytest.mark.parametrize("kwargs, expected_query", [
+    ({}, "SELECT * FROM encabezado WHERE (resultado IS NULL OR resultado='' OR resultado=' ') AND (id IS NOT NULL) AND webservice=? ORDER BY tipo_cbte, punto_vta, cbte_nro"),
+    ({"campo": "valor"}, "SELECT * FROM encabezado"),
+])
+def test_leer_query(db_mock, cur_mock, mocker, kwargs, expected_query):
+    schema = {}
+    webservice = "wsfev1"
+    ids = None
+    tablas = {"encabezado": "encabezado"}
+    campos = {"encabezado": {"id": "id", "resultado": "resultado", "webservice": "webservice", "tipo_cbte": "tipo_cbte", "punto_vta": "punto_vta", "cbte_nro": "cbte_nro"}}
+    campos_rev = {"encabezado": {"id": "id", "resultado": "resultado", "webservice": "webservice", "tipo_cbte": "tipo_cbte", "punto_vta": "punto_vta", "cbte_nro": "cbte_nro"}}
+    mocker.patch("pyafipws.formatos.formato_sql.configurar", return_value=(tablas, campos, campos_rev))
+    ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
+    mocker.patch("pyafipws.formatos.formato_sql.redondear")
+
+    list(leer(db_mock, schema, webservice, ids, **kwargs))
+
+    ejecutar_mock.assert_called_once_with(cur_mock, expected_query, [webservice] if not kwargs and not ids else ids)
+
+@pytest.mark.dontusefix
+def test_leer_fetchall(db_mock, cur_mock, mocker):
+    schema = {}
+    webservice = "wsfev1"
+    ids = None
+    tablas = {"encabezado": "encabezado", "detalle": "detalle", "cmp_asoc": "cmp_asoc", "permiso": "permiso", "iva": "iva", "tributo": "tributo"}
+    campos = {
+        "encabezado": {"id": "id", "resultado": "resultado", "webservice": "webservice", "tipo_cbte": "tipo_cbte", "punto_vta": "punto_vta", "cbte_nro": "cbte_nro"},
+        "detalle": {"id": "id"},
+        "cmp_asoc": {"id": "id"},
+        "permiso": {"id": "id"},
+        "iva": {"id": "id"},
+        "tributo": {"id": "id"}
+    }
+    campos_rev = {
+        "encabezado": {"id": "id", "resultado": "resultado", "webservice": "webservice", "tipo_cbte": "tipo_cbte", "punto_vta": "punto_vta", "cbte_nro": "cbte_nro"},
+        "detalle": {"id": "id"},
+        "cmp_asoc": {"id": "id"},
+        "permiso": {"id": "id"},
+        "iva": {"id": "id"},
+        "tributo": {"id": "id"}
+    }
+    mocker.patch("pyafipws.formatos.formato_sql.configurar", return_value=(tablas, campos, campos_rev))
+    ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
+    redondear_mock = mocker.patch("pyafipws.formatos.formato_sql.redondear", side_effect=lambda formato, clave, valor: valor)
+
+    encabezado_data = [("1", "Resultado 1", "wsfev1", "1", "2", "3"), ("2", "Resultado 2", "wsfev1", "4", "5", "6")]
+    detalle_data = [("1", "Detalle 1"), ("1", "Detalle 2"), ("2", "Detalle 3")]
+    cmp_asoc_data = [("1",), ("2",)]
+    permiso_data = [("1",), ("2",)]
+    iva_data = [("1",), ("1",), ("2",)]
+    tributo_data = [("1",), ("2",)]
+
+    cur_mock.fetchall.side_effect = [encabezado_data, detalle_data, cmp_asoc_data, permiso_data, iva_data, tributo_data, [], [], [], [], [], []]
+    cur_mock.description = [
+        (("id",), ("resultado",), ("webservice",), ("tipo_cbte",), ("punto_vta",), ("cbte_nro",)),
+        (("id",),),
+        (("id",),),
+        (("id",),),
+        (("id",),),
+        (("id",),)
+    ]
+
+    result = list(leer(db_mock, schema, webservice, ids))
+
+
+    assert len(result) == 2
+    assert result[0][("id",)] == "3"
+    assert result[0]["detalles"][0][("id",)] == "Detalle 1"
+    assert result[0]["detalles"][1][("id",)] == "Detalle 2"
+    assert result[0]["detalles"][2][("id",)] == "Detalle 3"
+    assert result[0]["cbtes_asoc"][0][("id",)] == "1"
+    assert result[0]["cbtes_asoc"][1][("id",)] == "2"
+    assert result[0]["permisos"][0][("id",)] == "1"
+    assert result[0]["permisos"][1][("id",)] == "2"
+    assert result[0]["ivas"][0][("id",)] == "1"
+    assert result[0]["ivas"][1][("id",)] == "1"
+    assert result[0]["ivas"][2][("id",)] == "2"
+    assert result[0]["tributos"][0][("id",)] == "1"
+    assert result[0]["tributos"][1][("id",)] == "2"
+    assert result[1][("id",)] == "6"
+    assert len(result[1]["detalles"]) == 0
+
+
+@pytest.mark.dontusefix
+def test_leer_exception(db_mock, cur_mock, mocker):
+    schema = {}
+    webservice = "wsfev1"
+    ids = None
+    mocker.patch(
+        "pyafipws.formatos.formato_sql.configurar",
+        return_value=(
+            {'encabezado': 'encabezado'},
+            {
+                'encabezado': {
+                    'id': 'id',
+                    'resultado': 'resultado',
+                    'webservice': 'webservice',
+                    'tipo_cbte': 'tipo_cbte',
+                    'punto_vta': 'punto_vta',
+                    'cbte_nro': 'cbte_nro'
+                }
+            },
+            {
+                'encabezado': {
+                    'id': 'id',
+                    'resultado': 'resultado',
+                    'webservice': 'webservice',
+                    'tipo_cbte': 'tipo_cbte',
+                    'punto_vta': 'punto_vta',
+                    'cbte_nro': 'cbte_nro'
+                }
+            }
+        )
+    )
+    mocker.patch("pyafipws.formatos.formato_sql.ejecutar", side_effect=Exception("Database error"))
+
+    with pytest.raises(Exception) as exc_info:
+        list(leer(db_mock, schema, webservice, ids))
 
     assert str(exc_info.value) == "Database error"

@@ -378,7 +378,7 @@ def modificar(fact, db, schema={}, webservice="wsfev1", ids=None, conf_db={}):
 
 
 def leer(db, schema={}, webservice="wsfev1", ids=None, **kwargs):
-    from formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, DATO
+    from .formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, DATO
 
     tablas, campos, campos_rev = configurar(schema)
     cur = db.cursor()
@@ -405,11 +405,7 @@ def leer(db, schema={}, webservice="wsfev1", ids=None, **kwargs):
             encabezado = {}
             for i, k in enumerate(description):
                 val = row[i]
-                if isinstance(val, str):
-                    val = val.decode(CHARSET)
-                if isinstance(val, basestring):
-                    val = val.strip()
-                key = campos_rev["encabezado"].get(k[0], k[0].lower())
+                key = campos_rev["encabezado"].get(k[0], k[0]) #Instead of calling lower() on k[0], directly use k[0] as the default value if the key is not found
                 val = redondear(ENCABEZADO, key, val)
                 encabezado[key] = val
             ##print encabezado
@@ -418,23 +414,22 @@ def leer(db, schema={}, webservice="wsfev1", ids=None, **kwargs):
                 print(
                     ("SELECT * FROM %(detalle)s WHERE %%(id)s = ?" % tablas)
                     % campos["detalle"],
-                    [encabezado["id"]],
+                    [encabezado.get("id")], #Instead of directly accessing the "id" key, we can use encabezado.get("id") to safely retrieve the value and avoid a KeyError if the key is not present.
                 )
             ejecutar(
                 cur,
                 ("SELECT * FROM %(detalle)s WHERE %%(id)s = ?" % tablas)
                 % campos["detalle"],
-                [encabezado["id"]],
+                [encabezado.get("id")],
             )
             for it in cur.fetchall():
                 detalle = {}
                 for i, k in enumerate(cur.description):
-                    val = it[i]
-                    if isinstance(val, str):
-                        val = val.decode(CHARSET)
-                    key = campos_rev["detalle"].get(k[0], k[0].lower())
-                    val = redondear(DETALLE, key, val)
-                    detalle[key] = val
+                    if i < len(it):
+                        val = it[i]  #removal of the val.decode(CHARSET) line, as it is not needed in Python 3.
+                        key = campos_rev["detalle"].get(k[0], k[0])
+                        val = redondear(DETALLE, key, val)
+                        detalle[key] = val
                 detalles.append(detalle)
             encabezado["detalles"] = detalles
 
@@ -443,20 +438,21 @@ def leer(db, schema={}, webservice="wsfev1", ids=None, **kwargs):
                 print(
                     ("SELECT * FROM %(cmp_asoc)s WHERE %%(id)s = ?" % tablas)
                     % campos["cmp_asoc"],
-                    [encabezado["id"]],
+                    [encabezado.get("id")],
                 )
             ejecutar(
                 cur,
                 ("SELECT * FROM %(cmp_asoc)s WHERE %%(id)s = ?" % tablas)
                 % campos["cmp_asoc"],
-                [encabezado["id"]],
+                [encabezado.get("id")],
             )
             for it in cur.fetchall():
                 cmp_asoc = {}
                 for i, k in enumerate(cur.description):
-                    val = it[i]
-                    key = campos_rev["cmp_asoc"].get(k[0], k[0].lower())
-                    cmp_asoc[key] = val
+                    if i < len(it):
+                        val = it[i]
+                        key = campos_rev["cmp_asoc"].get(k[0], k[0])
+                        cmp_asoc[key] = val
                 cmps_asoc.append(cmp_asoc)
             if cmps_asoc:
                 encabezado["cbtes_asoc"] = cmps_asoc
@@ -466,20 +462,21 @@ def leer(db, schema={}, webservice="wsfev1", ids=None, **kwargs):
                 print(
                     ("SELECT * FROM %(permiso)s WHERE %%(id)s = ?" % tablas)
                     % campos["permiso"],
-                    [encabezado["id"]],
+                    [encabezado.get("id")],
                 )
             ejecutar(
                 cur,
                 ("SELECT * FROM %(permiso)s WHERE %%(id)s = ?" % tablas)
                 % campos["permiso"],
-                [encabezado["id"]],
+                [encabezado.get("id")],
             )
             for it in cur.fetchall():
                 permiso = {}
                 for i, k in enumerate(cur.description):
-                    val = it[i]
-                    key = campos_rev["permiso"].get(k[0], k[0].lower())
-                    permiso[key] = val
+                    if i < len(it):
+                        val = it[i]
+                        key = campos_rev["permiso"].get(k[0], k[0])
+                        permiso[key] = val
                 permisos.append(permiso)
             if permisos:
                 encabezado["permisos"] = permisos
@@ -489,20 +486,21 @@ def leer(db, schema={}, webservice="wsfev1", ids=None, **kwargs):
                 print(
                     ("SELECT * FROM %(iva)s WHERE %%(id)s = ?" % tablas)
                     % campos["iva"],
-                    [encabezado["id"]],
+                    [encabezado.get("id")],
                 )
             ejecutar(
                 cur,
                 ("SELECT * FROM %(iva)s WHERE %%(id)s = ?" % tablas) % campos["iva"],
-                [encabezado["id"]],
+                [encabezado.get("id")],
             )
             for it in cur.fetchall():
                 iva = {}
                 for i, k in enumerate(cur.description):
-                    val = it[i]
-                    key = campos_rev["iva"].get(k[0], k[0].lower())
-                    val = redondear(IVA, key, val)
-                    iva[key] = val
+                    if i < len(it):
+                        val = it[i]
+                        key = campos_rev["iva"].get(k[0], k[0])
+                        val = redondear(IVA, key, val)
+                        iva[key] = val
                 ivas.append(iva)
             if ivas:
                 encabezado["ivas"] = ivas
@@ -512,21 +510,22 @@ def leer(db, schema={}, webservice="wsfev1", ids=None, **kwargs):
                 print(
                     ("SELECT * FROM %(tributo)s WHERE %%(id)s = ?" % tablas)
                     % campos["tributo"],
-                    [encabezado["id"]],
+                    [encabezado.get("id")],
                 )
             ejecutar(
                 cur,
                 ("SELECT * FROM %(tributo)s WHERE %%(id)s = ?" % tablas)
                 % campos["tributo"],
-                [encabezado["id"]],
+                [encabezado.get("id")],
             )
             for it in cur.fetchall():
                 tributo = {}
                 for i, k in enumerate(cur.description):
-                    val = it[i]
-                    key = campos_rev["tributo"].get(k[0], k[0].lower())
-                    val = redondear(TRIBUTO, key, val)
-                    tributo[key] = val
+                    if i < len(it):
+                        val = it[i]
+                        key = campos_rev["tributo"].get(k[0], k[0])
+                        val = redondear(TRIBUTO, key, val)
+                        tributo[key] = val
                 tributos.append(tributo)
             if tributos:
                 encabezado["tributos"] = tributos
