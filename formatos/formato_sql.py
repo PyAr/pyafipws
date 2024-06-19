@@ -332,7 +332,7 @@ def escribir(facts, db, schema={}, commit=True):
 
 
 def modificar(fact, db, schema={}, webservice="wsfev1", ids=None, conf_db={}):
-    from formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, DATO
+    from .formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, DATO
 
     update = [
         "cae",

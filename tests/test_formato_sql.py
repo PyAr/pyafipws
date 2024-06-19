@@ -19,7 +19,7 @@ __license__ = "GPL 3.0"
 import pytest
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
-from pyafipws.formatos.formato_sql import esquema_sql, configurar, ejecutar, max_id, redondear, escribir
+from pyafipws.formatos.formato_sql import esquema_sql, configurar, ejecutar, max_id, redondear, escribir, modificar, CAE_NULL, FECHA_VTO_NULL, RESULTADO_NULL, NULL
 from pyafipws.formatos.formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, A, N, I
 
 @pytest.mark.dontusefix
@@ -805,3 +805,73 @@ class Test_escribir:
 
             assert ejecutar_mock.call_count == 1
             db_mock.commit.assert_not_called()  
+            
+            
+            
+            
+            
+@pytest.mark.dontusefix
+@pytest.mark.parametrize("cae, fecha_vto, resultado, reproceso, motivo_obs, err_code, err_msg, cbte_nro", [
+    ("12345678901234", "20230101", "A", "S", "Observación", "00", "Error mensaje", "1"),
+    ("NULL", None, None, None, None, None, None, "2"),
+    ("", None, "", "", "", "", "", "3"),
+])
+def test_modificar(db_mock, cur_mock, mocker, cae, fecha_vto, resultado, reproceso, motivo_obs, err_code, err_msg, cbte_nro):
+    fact = {
+        "id": 1,
+        "cae": cae,
+        "fecha_vto": fecha_vto,
+        "resultado": resultado,
+        "reproceso": reproceso,
+        "motivo_obs": motivo_obs,
+        "err_code": err_code,
+        "err_msg": err_msg,
+        "cbte_nro": cbte_nro,
+    }
+    schema = {}
+    webservice = "wsfev1"
+    ids = None
+    conf_db = {"null": True}
+
+    mocker.patch("pyafipws.formatos.formato_sql.configurar", return_value=({'encabezado': 'encabezado'}, {"encabezado": {"id": "id"}}, {}))
+
+    modificar(fact, db_mock, schema, webservice, ids, conf_db)
+
+    if cae == "NULL" or cae == "" or cae is None:
+        assert fact["cae"] == CAE_NULL
+        assert fact["fecha_vto"] == FECHA_VTO_NULL
+
+    if "null" in conf_db and (resultado is None or resultado == ""):
+        assert fact["resultado"] == RESULTADO_NULL
+
+    for k in ["reproceso", "motivo_obs", "err_code", "err_msg"]:
+        if "null" in conf_db and (k in fact and fact[k] is None or fact[k] == ""):
+            assert fact[k] == NULL
+
+    cur_mock.execute.assert_called_once()
+
+@pytest.mark.dontusefix
+def test_modificar_exception(db_mock, cur_mock, mocker):
+    fact = {
+        "id": 1,
+        "cae": "12345678901234",
+        "fecha_vto": "20230101",
+        "resultado": "A",
+        "reproceso": "S",
+        "motivo_obs": "Observación",
+        "err_code": "00",
+        "err_msg": "Error mensaje",
+        "cbte_nro": "1",
+    }
+    schema = {}
+    webservice = "wsfev1"
+    ids = None
+    conf_db = {"null": True}
+
+    mocker.patch("pyafipws.formatos.formato_sql.configurar", return_value=({'encabezado': 'encabezado'}, {"encabezado": {"id": "id"}}, {}))
+    mocker.patch("pyafipws.formatos.formato_sql.ejecutar", side_effect=Exception("Database error"))
+
+    with pytest.raises(Exception) as exc_info:
+        modificar(fact, db_mock, schema, webservice, ids, conf_db)
+
+    assert str(exc_info.value) == "Database error"
