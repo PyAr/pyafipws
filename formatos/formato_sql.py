@@ -536,9 +536,9 @@ def leer(db, schema={}, webservice="wsfev1", ids=None, **kwargs):
         cur.close()
 
 
-def ayuda():
-    print("-- Formato:")
-    from formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, DATO, PERMISO
+def ayuda(file=None):
+    print("-- Formato:", file=file) # modified to include the file parameter, which redirects the output to the specified file-like object.
+    from .formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, DATO, PERMISO
 
     tipos_registro = [
         ("encabezado", ENCABEZADO),
@@ -549,10 +549,16 @@ def ayuda():
         ("permiso", PERMISO),
         ("dato", DATO),
     ]
-    print("-- Esquema:")
-    for sql in esquema_sql(tipos_registro):
-        print(sql)
+    print("-- Esquema:", file=file)
+    try:
+        for sql in esquema_sql(tipos_registro):
+            print(sql, file=file)
+    except Exception as e:
+        print(f"Error al generar esquema SQL: {str(e)}", file=file)
 
+# The file parameter is added to the function signature, 
+# Which allows specifying the file-like object to which the output should be redirected. 
+# It defaults to None, which means the output will be printed to the console.
 
 if __name__ == "__main__":
     ayuda()

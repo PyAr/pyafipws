@@ -17,9 +17,10 @@ __copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
 __license__ = "GPL 3.0"
 
 import pytest
+import io
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
-from pyafipws.formatos.formato_sql import esquema_sql, leer, configurar, ejecutar, max_id, redondear, escribir, modificar, CAE_NULL, FECHA_VTO_NULL, RESULTADO_NULL, NULL
+from pyafipws.formatos.formato_sql import esquema_sql, leer, configurar, ejecutar, max_id, redondear, escribir, modificar, ayuda, CAE_NULL, FECHA_VTO_NULL, RESULTADO_NULL, NULL
 from pyafipws.formatos.formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, A, N, I
 
 @pytest.mark.dontusefix
@@ -1008,3 +1009,69 @@ def test_leer_exception(db_mock, cur_mock, mocker):
         list(leer(db_mock, schema, webservice, ids))
 
     assert str(exc_info.value) == "Database error"
+
+
+
+@pytest.mark.dontusefix
+def test_ayuda_output(capsys):
+    ayuda()
+    captured = capsys.readouterr()
+
+    # Verify the presence of expected headers
+    assert "-- Formato:" in captured.out
+    assert "-- Esquema:" in captured.out
+
+    # Verify the presence of expected CREATE TABLE statements
+    expected_tables = [
+        "encabezado",
+        "detalle",
+        "tributo",
+        "iva",
+        "cmp_asoc",
+        "permiso",
+        "dato",
+    ]
+    for table in expected_tables:
+        assert f"CREATE TABLE {table}" in captured.out
+
+    # Verify the presence of expected field definitions
+    expected_fields = [
+        "tipo_reg INTEGER",
+        "codigo VARCHAR (30)",
+        "base_imp NUMERIC (15, 3)",
+        "iva_id INTEGER",
+        "cbte_tipo INTEGER",
+        "id_permiso VARCHAR (16)",
+        "campo VARCHAR (30)",
+    ]
+    for field in expected_fields:
+        assert field in captured.out
+
+
+@pytest.mark.dontusefix
+def test_ayuda_exception_handling(capsys):
+    # Test handling of KeyboardInterrupt exception
+    with patch("pyafipws.formatos.formato_sql.esquema_sql", side_effect=KeyboardInterrupt):
+        try:
+            ayuda()
+        except KeyboardInterrupt:
+            pass
+    captured = capsys.readouterr()
+    assert "-- Formato:" in captured.out
+    assert "-- Esquema:" in captured.out
+
+    # Test handling of generic exception
+    with patch("pyafipws.formatos.formato_sql.esquema_sql", side_effect=Exception("Test Exception")):
+        ayuda()
+    captured = capsys.readouterr()
+    assert "-- Formato:" in captured.out
+    assert "-- Esquema:" in captured.out
+    assert "Error al generar esquema SQL: Test Exception" in captured.out
+
+    # Test handling of generic exception
+    with patch("pyafipws.formatos.formato_sql.esquema_sql", side_effect=Exception("Test Exception")):
+        ayuda()
+    captured = capsys.readouterr()
+    assert "-- Formato:" in captured.out
+    assert "-- Esquema:" in captured.out
+
