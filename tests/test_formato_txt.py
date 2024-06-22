@@ -17,7 +17,11 @@ __copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
 __license__ = "GPL 3.0"
 
 import os
+import re
 import pytest
+import unicodedata
+from io import StringIO
+import tempfile
 from unittest.mock import patch, mock_open
 from pyafipws.formatos import formato_txt
 
@@ -291,3 +295,200 @@ class TestLeer:
         
         out, err = capfd.readouterr()
         assert "{'tipo_reg': 9," in out  # Check if dato is printed
+
+
+@pytest.mark.dontusefix
+class TestEscribir:
+    """Pruebas para la función escribir"""
+
+    @pytest.fixture(scope="class")
+    def facturas_lines(self):
+        return read_facturas_txt()
+
+    @pytest.fixture
+    def sample_regs(self, facturas_lines):
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False, encoding='utf-8') as temp_file:
+            temp_file.write(''.join(facturas_lines))
+            temp_file.flush()
+            temp_filename = temp_file.name
+
+        try:
+            return formato_txt.leer(temp_filename)
+        finally:
+            os.unlink(temp_filename)
+
+
+    def test_escribir_basic(self, sample_regs):
+        """Prueba básica de escritura de registros"""
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+            temp_filename = temp_file.name
+
+        try:
+            formato_txt.escribir(sample_regs, temp_filename)
+            
+            with open(temp_filename, 'r') as f:
+                content = f.read()
+
+            assert "0" in content  # Encabezado
+            assert "1" in content  # Detalle
+            assert "3" in content  # Permiso
+            assert "4" in content  # IVA
+            assert "5" in content  # Tributo
+            assert "9" in content  # Dato
+        finally:
+            os.unlink(temp_filename)
+
+    def test_escribir_empty_regs(self):
+        """Prueba escribir con una lista vacía de registros"""
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+            temp_filename = temp_file.name
+
+        try:
+            formato_txt.escribir([], temp_filename)
+            
+            with open(temp_filename, 'r') as f:
+                content = f.read()
+
+            assert content == ""  # El archivo debería estar vacío
+        finally:
+            os.unlink(temp_filename)
+
+    def test_escribir_multiple_regs(self, sample_regs):
+        """Prueba escribir múltiples registros"""
+        multiple_regs = sample_regs * 2
+        
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+            temp_filename = temp_file.name
+        
+        try:
+            formato_txt.escribir(multiple_regs, temp_filename)
+            
+            with open(temp_filename, 'r') as f:
+                content = f.readlines()
+            
+            # Count the number of lines that start with '0' (header lines)
+            header_count = sum(1 for line in content if line.startswith('0'))
+            
+            assert header_count == 2, f"Expected 2 headers, but found {header_count}"
+            
+            # Count lines for each type of record
+            type_counts = {str(i): sum(1 for line in content if line.startswith(str(i))) for i in range(10)}
+            
+            print("Line type counts:", type_counts)
+            
+            # Check that we have the expected number of each type of line
+            assert type_counts['0'] == 2, f"Expected 2 header lines (type 0), but found {type_counts['0']}"
+            assert type_counts['1'] >= 2, f"Expected at least 2 detail lines (type 1), but found {type_counts['1']}"
+            
+            # Print out all lines for debugging
+            for i, line in enumerate(content):
+                print(f"Line {i+1}: {line.strip()}")
+            
+            # Check total number of lines
+            expected_min_lines = sum(len(reg['detalles']) + 1 for reg in multiple_regs)
+            assert len(content) >= expected_min_lines, f"Expected at least {expected_min_lines} lines, but found {len(content)}"
+        
+        finally:
+            os.unlink(temp_filename)
+
+
+    def test_escribir_compatibility_cbt_numero(self, sample_regs):
+        """Prueba la compatibilidad del campo cbt_numero"""
+        sample_regs[0].pop("cbte_nro", None)
+        sample_regs[0]["cbt_numero"] = 9876
+
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+            temp_filename = temp_file.name
+
+        try:
+            formato_txt.escribir(sample_regs, temp_filename)
+            
+            with open(temp_filename, 'r') as f:
+                content = f.read()
+
+            assert "9876" in content  # Debería usar cbt_numero en lugar de cbte_nro
+        finally:
+            os.unlink(temp_filename)
+
+    @patch('pyafipws.formatos.formato_txt.escribir_linea_txt')
+    def test_escribir_calls_escribir_linea_txt(self, mock_escribir_linea_txt, sample_regs):
+        """Prueba que se llame a escribir_linea_txt para cada sección"""
+        with patch('builtins.open', mock_open()) as mock_file:
+            formato_txt.escribir(sample_regs, "dummy.txt")
+
+        expected_calls = sum(len(reg.get(section, [])) for reg in sample_regs for section in ['detalles', 'permisos', 'cbtes_asoc', 'ivas', 'tributos', 'opcionales', 'datos']) + len(sample_regs)
+        assert mock_escribir_linea_txt.call_count == expected_calls
+
+    def test_escribir_file_permissions(self, sample_regs):
+        """Prueba que el archivo se cree con los permisos correctos"""
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+            temp_filename = temp_file.name
+
+        try:
+            formato_txt.escribir(sample_regs, temp_filename)
+            
+            assert os.access(temp_filename, os.R_OK)  # Readable
+            assert os.access(temp_filename, os.W_OK)  # Writable
+        finally:
+            os.unlink(temp_filename)
+
+    def test_escribir_file_already_exists(self, sample_regs):
+        """Prueba escribir cuando el archivo ya existe"""
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+            temp_filename = temp_file.name
+            temp_file.write("Existing content\n")
+
+        try:
+            formato_txt.escribir(sample_regs, temp_filename)
+            
+            with open(temp_filename, 'r') as f:
+                content = f.read()
+
+            assert "Existing content" in content  # El contenido existente debería permanecer
+            assert "0" in content  # Y el nuevo contenido debería agregarse
+        finally:
+            os.unlink(temp_filename)
+
+    def test_escribir_unicode_content(self, sample_regs):
+        """Prueba escribir contenido con caracteres Unicode"""
+        sample_regs[0]["nombre_cliente"] = "José Martínez"
+
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+            temp_filename = temp_file.name
+
+        try:
+            formato_txt.escribir(sample_regs, temp_filename)
+
+            # Read the file in binary mode
+            with open(temp_filename, 'rb') as f:
+                content = f.read()
+
+            # Try to decode with different encodings
+            encodings = ['utf-8', 'latin-1', 'iso-8859-1']
+            decoded_content = None
+            used_encoding = None
+
+            for encoding in encodings:
+                try:
+                    decoded_content = content.decode(encoding)
+                    used_encoding = encoding
+                    break
+                except UnicodeDecodeError:
+                    continue
+
+            assert decoded_content is not None, f"Could not decode the file content with any of these encodings: {encodings}"
+            
+            print(f"File successfully decoded with {used_encoding} encoding")
+
+            assert "José Martínez" in decoded_content, "Unicode content not found in the written file"
+
+            # Additional checks
+            lines = decoded_content.split('\n')
+            assert any('José Martínez' in line for line in lines), "Unicode content not found in any line"
+
+            # Print content for debugging
+            print("File content:")
+            print(decoded_content)
+
+        finally:
+            os.unlink(temp_filename)
