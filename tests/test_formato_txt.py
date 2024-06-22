@@ -17,6 +17,7 @@ __copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
 __license__ = "GPL 3.0"
 
 import os
+import io
 import re
 import pytest
 import unicodedata
@@ -26,6 +27,7 @@ from unittest.mock import patch, mock_open
 from pyafipws.formatos import formato_txt
 
 def read_facturas_txt():
+    """Lee el archivo de facturas de prueba"""
     current_dir = os.path.dirname(os.path.abspath(__file__))
     facturas_path = os.path.join(current_dir, 'facturas.txt')
     with open(facturas_path, 'r', encoding='utf-8') as file:
@@ -37,10 +39,11 @@ class TestLeerLineaTxt:
      
     @pytest.fixture(scope="class")
     def facturas_lines(self):
+        """Fixture que proporciona las líneas del archivo de facturas"""
         return read_facturas_txt()
     
     def test_leer_linea_txt_encabezado(self, facturas_lines):
-        
+        """Prueba la lectura de una línea de encabezado"""
         encabezado_line = next(line for line in facturas_lines if line.startswith('0'))
         result = formato_txt.leer_linea_txt(encabezado_line, formato_txt.ENCABEZADO)
 
@@ -76,7 +79,7 @@ class TestLeerLineaTxt:
         assert result['imp_iva'] == 21.0
 
     def test_leer_linea_txt_detalle(self, facturas_lines):
-        
+        """Prueba la lectura de una línea de detalle"""
         detalle_line = next(line for line in facturas_lines if line.startswith('1'))
         result = formato_txt.leer_linea_txt(detalle_line, formato_txt.DETALLE)
 
@@ -91,6 +94,7 @@ class TestLeerLineaTxt:
         assert result['despacho'] == 'Nº 123456'
 
     def test_leer_linea_txt_iva(self, facturas_lines):
+        """Prueba la lectura de una línea de IVA"""
         iva_line = next(line for line in facturas_lines if line.startswith('4'))
         result = formato_txt.leer_linea_txt(iva_line, formato_txt.IVA)
 
@@ -100,6 +104,7 @@ class TestLeerLineaTxt:
         assert result['importe'] == 21.0
 
     def test_leer_linea_txt_tributo(self, facturas_lines):
+        """Prueba la lectura de una línea de tributo"""
         tributo_line = next(line for line in facturas_lines if line.startswith('5'))
         result = formato_txt.leer_linea_txt(tributo_line, formato_txt.TRIBUTO)
 
@@ -111,6 +116,7 @@ class TestLeerLineaTxt:
         assert result['importe'] == 1.0
 
     def test_leer_linea_txt_permiso(self, facturas_lines):
+        """Prueba la lectura de una línea de permiso"""
         permiso_line = next((line for line in facturas_lines if line.startswith('3')), None)
         if permiso_line:
             result = formato_txt.leer_linea_txt(permiso_line, formato_txt.PERMISO)
@@ -120,6 +126,7 @@ class TestLeerLineaTxt:
             pytest.skip("No permiso line found in facturas.txt")
 
     def test_leer_linea_txt_dato(self, facturas_lines):
+        """Prueba la lectura de una línea de dato adicional"""
         dato_line = next((line for line in facturas_lines if line.startswith('9')), None)
         if dato_line:
             result = formato_txt.leer_linea_txt(dato_line, formato_txt.DATO)
@@ -129,6 +136,7 @@ class TestLeerLineaTxt:
         else:
             pytest.skip("No dato line found in facturas.txt")
 
+
 @pytest.mark.dontusefix
 class TestEscribirLineaTxt:
     
@@ -137,30 +145,35 @@ class TestEscribirLineaTxt:
         return read_facturas_txt()
     
     def test_escribir_linea_txt_encabezado(self, facturas_lines):
+        """Prueba la escritura de una línea de encabezado"""
         encabezado_line = next(line for line in facturas_lines if line.startswith('0'))
         parsed_encabezado = formato_txt.leer_linea_txt(encabezado_line, formato_txt.ENCABEZADO)
         written_line = formato_txt.escribir_linea_txt(parsed_encabezado, formato_txt.ENCABEZADO)
         assert written_line.strip() == encabezado_line.strip()
 
     def test_escribir_linea_txt_detalle(self, facturas_lines):
+        """Prueba la escritura de una línea de detalle"""
         detalle_line = next(line for line in facturas_lines if line.startswith('1'))
         parsed_detalle = formato_txt.leer_linea_txt(detalle_line, formato_txt.DETALLE)
         written_line = formato_txt.escribir_linea_txt(parsed_detalle, formato_txt.DETALLE)
         assert written_line.strip() == detalle_line.strip()
 
     def test_escribir_linea_txt_iva(self, facturas_lines):
+        """Prueba la escritura de una línea de IVA"""
         iva_line = next(line for line in facturas_lines if line.startswith('4'))
         parsed_iva = formato_txt.leer_linea_txt(iva_line, formato_txt.IVA)
         written_line = formato_txt.escribir_linea_txt(parsed_iva, formato_txt.IVA)
         assert written_line.strip() == iva_line.strip()
 
     def test_escribir_linea_txt_tributo(self, facturas_lines):
+        """Prueba la escritura de una línea de tributo"""
         tributo_line = next(line for line in facturas_lines if line.startswith('5'))
         parsed_tributo = formato_txt.leer_linea_txt(tributo_line, formato_txt.TRIBUTO)
         written_line = formato_txt.escribir_linea_txt(parsed_tributo, formato_txt.TRIBUTO)
         assert written_line.strip() == tributo_line.strip()
 
     def test_escribir_linea_txt_permiso(self, facturas_lines):
+        """Prueba la escritura de una línea de permiso"""
         permiso_line = next((line for line in facturas_lines if line.startswith('3')), None)
         if permiso_line:
             parsed_permiso = formato_txt.leer_linea_txt(permiso_line, formato_txt.PERMISO)
@@ -170,6 +183,7 @@ class TestEscribirLineaTxt:
             pytest.skip("No permiso line found in facturas.txt")
 
     def test_escribir_linea_txt_dato(self, facturas_lines):
+        """Prueba la escritura de una línea de dato adicional"""
         dato_line = next((line for line in facturas_lines if line.startswith('9')), None)
         if dato_line:
             parsed_dato = formato_txt.leer_linea_txt(dato_line, formato_txt.DATO)
@@ -179,6 +193,7 @@ class TestEscribirLineaTxt:
             pytest.skip("No dato line found in facturas.txt")
 
     def test_leer_escribir_all_lines(self, facturas_lines):
+        """Prueba la lectura y escritura de todas las líneas del archivo"""
         for line in facturas_lines:
             tipo_reg = int(line[0])
             if tipo_reg == 0:
@@ -211,6 +226,7 @@ class TestLeer:
         return read_facturas_txt()
     
     def test_leer_multiple_invoices(self, facturas_lines):
+        """Prueba la lectura de múltiples facturas en un solo archivo"""
         multiple_invoices = (''.join(facturas_lines) * 2).encode(formato_txt.CHARSET)  # Encode the input
         with patch('builtins.open', mock_open(read_data=multiple_invoices)):
             result = formato_txt.leer("dummy.txt")
@@ -221,6 +237,7 @@ class TestLeer:
             assert len(invoice['detalles']) >= 1
 
     def test_leer_missing_sections(self, facturas_lines):
+        """Prueba la lectura de un archivo con secciones faltantes"""
         incomplete_input = ''.join(line for line in facturas_lines if not line.startswith(('2', '3', '6')))
         incomplete_input = incomplete_input.encode(formato_txt.CHARSET)  # Encode the input
         with patch('builtins.open', mock_open(read_data=incomplete_input)):
@@ -234,6 +251,7 @@ class TestLeer:
         assert len(result[0]['opcionales']) == 0
 
     def test_leer_invalid_line(self, facturas_lines, capfd):
+        """Prueba el manejo de líneas inválidas en el archivo"""
         invalid_input = (''.join(facturas_lines) + "7Invalid line\n").encode(formato_txt.CHARSET)  # Encode the input
         with patch('builtins.open', mock_open(read_data=invalid_input)):
             result = formato_txt.leer("dummy.txt")
@@ -244,6 +262,7 @@ class TestLeer:
 
     @pytest.mark.parametrize("encoding", ["utf-8", "iso-8859-1", "ascii"])
     def test_leer_different_encodings(self, facturas_lines, encoding):
+        """Prueba la lectura de archivos con diferentes codificaciones"""
         try:
             mock_data = ''.join(facturas_lines).encode(encoding)
         except UnicodeEncodeError:
@@ -257,6 +276,7 @@ class TestLeer:
         assert result[0]['tipo_reg'] == 0
 
     def test_leer_large_file(self, facturas_lines):
+        """Prueba la lectura de un archivo grande"""
         large_input = (''.join(facturas_lines) * 1000).encode(formato_txt.CHARSET)  # Encode the input
         with patch('builtins.open', mock_open(read_data=large_input)):
             result = formato_txt.leer("large.txt")
@@ -267,6 +287,7 @@ class TestLeer:
             assert len(invoice['detalles']) >= 1
 
     def test_leer_compatibility_cbt_numero(self, facturas_lines):
+        """Prueba la compatibilidad del campo cbt_numero"""
         mock_data = ''.join(facturas_lines).encode(formato_txt.CHARSET)  # Encode the input
         with patch('builtins.open', mock_open(read_data=mock_data)):
             result = formato_txt.leer("dummy.txt")
@@ -274,6 +295,7 @@ class TestLeer:
         assert result[0]['cbt_numero'] == result[0]['cbte_nro']
 
     def test_leer_all_sections(self, facturas_lines):
+        """Prueba la lectura de todas las secciones de una factura"""
         mock_data = ''.join(facturas_lines).encode(formato_txt.CHARSET)  # Encode the input
         with patch('builtins.open', mock_open(read_data=mock_data)):
             result = formato_txt.leer("dummy.txt")
@@ -289,6 +311,7 @@ class TestLeer:
         assert 'datos' in invoice
 
     def test_leer_print_dato(self, facturas_lines, capfd):
+        """Prueba la impresión de datos durante la lectura"""
         mock_data = ''.join(facturas_lines).encode(formato_txt.CHARSET)  # Encode the input
         with patch('builtins.open', mock_open(read_data=mock_data)):
             result = formato_txt.leer("dummy.txt")
@@ -492,3 +515,101 @@ class TestEscribir:
 
         finally:
             os.unlink(temp_filename)
+
+
+@pytest.mark.dontusefix
+class TestAyuda:
+    @pytest.fixture(scope="class")
+    def facturas_lines(self):
+        """Fixture para proporcionar el contenido de facturas.txt"""
+        return read_facturas_txt()
+
+    def test_ayuda_output(self, facturas_lines):
+        """Prueba que la función ayuda() genera la salida esperada basada en facturas.txt"""
+        expected_output = "Formato:\n== Encabezado ==\n"
+        
+        with patch('sys.stdout', new=io.StringIO()) as fake_output:
+            formato_txt.ayuda()
+            output = fake_output.getvalue()
+            assert output.startswith(expected_output)
+            
+            # Verificar que los campos del encabezado están presentes
+            for line in facturas_lines:
+                if line.startswith('0'):
+                    encabezado = formato_txt.leer_linea_txt(line, formato_txt.ENCABEZADO)
+                    for campo in encabezado.keys():
+                        assert f"Campo: {campo}" in output
+
+    def test_ayuda_all_tipos_registro(self, facturas_lines):
+        """Prueba que todos los tipos de registro en facturas.txt están incluidos en la salida"""
+        tipos_registro = set()
+        for line in facturas_lines:
+            tipos_registro.add(int(line[0]))
+
+        with patch('sys.stdout', new=io.StringIO()) as fake_output:
+            formato_txt.ayuda()
+            output = fake_output.getvalue()
+            
+            for tipo in tipos_registro:
+                if tipo == 0:
+                    assert "== Encabezado ==" in output
+                elif tipo == 1:
+                    assert "== Detalle Item ==" in output
+                elif tipo == 2:
+                    assert "== Comprobante Asociado ==" in output
+                elif tipo == 3:
+                    assert "== Permiso ==" in output
+                elif tipo == 4:
+                    assert "== Iva ==" in output
+                elif tipo == 5:
+                    assert "== Tributo ==" in output
+                elif tipo == 9:
+                    assert "== Datos Adicionales ==" in output
+
+    def test_ayuda_campo_format(self, facturas_lines):
+        """Prueba que el formato de cada campo es correcto usando datos de facturas.txt"""
+        with patch('sys.stdout', new=io.StringIO()) as fake_output:
+            formato_txt.ayuda()
+            output = fake_output.getvalue()
+            lines = output.split('\n')
+            
+            for line in facturas_lines:
+                tipo_reg = int(line[0])
+                if tipo_reg == 0:
+                    formato = formato_txt.ENCABEZADO
+                elif tipo_reg == 1:
+                    formato = formato_txt.DETALLE
+                elif tipo_reg == 2:
+                    formato = formato_txt.CMP_ASOC
+                elif tipo_reg == 3:
+                    formato = formato_txt.PERMISO
+                elif tipo_reg == 4:
+                    formato = formato_txt.IVA
+                elif tipo_reg == 5:
+                    formato = formato_txt.TRIBUTO
+                elif tipo_reg == 9:
+                    formato = formato_txt.DATO
+                else:
+                    continue
+
+                for fmt in formato:
+                    campo = fmt[0]
+                    campo_line = next((l for l in lines if l.startswith(f" * Campo: {campo}")), None)
+                    assert campo_line is not None, f"Campo {campo} no encontrado en la salida de ayuda()"
+                    parts = campo_line.split()
+                    assert len(parts) >= 9, f"Formato incorrecto para el campo {campo}: {campo_line}"
+                    assert parts[0] == "*"
+                    assert parts[1] == "Campo:"
+                    assert parts[3] == "Posición:"
+                    assert parts[5] == "Longitud:"
+                    assert "Tipo:" in parts
+                    assert "Decimales:" in parts
+
+
+    def test_ayuda_main(self):
+        """Prueba que existe un bloque __main__ que llama a la función ayuda()"""
+        with open(formato_txt.__file__, 'r') as file:
+            content = file.read()
+            assert 'if __name__ == "__main__":' in content
+            assert 'ayuda()' in content
+    
