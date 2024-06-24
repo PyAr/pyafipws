@@ -118,7 +118,7 @@ DETALLE = [
     ("imp_iva", 15, I),
     ("despacho", 20, A),
     ("u_mtx", 10, N),
-    ("cod_mtx", 30, N),
+    ("cod_mtx", 20, N), #should not exceed 20
     ("dato_a", 15, A),
     ("dato_b", 15, A),
     ("dato_c", 15, A),

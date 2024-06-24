@@ -130,16 +130,40 @@ def leer(archivos=None, carpeta=None):
         # construir ruta absoluta si se especifica carpeta
         if carpeta is not None:
             filename = os.path.join(carpeta, filename)
+        
+        # Added check for file existence
+        # To handle missing files gracefully and continue processing other files
+        if not os.path.exists(filename):
+            if DEBUG:
+                print(f"Warning: File {filename} not found, skipping.")
+            continue
+
         if DEBUG:
             print("leyendo tabla", nombre, filename)
         tabla = dbf.Table(filename, codepage=CODEPAGE)
-        for reg in tabla:
+        
+        # Explicitly open the table
+        # To ensure the table is properly opened before reading
+        tabla.open()
+        
+        for record in tabla:
             r = {}
-            d = reg.scatter_fields()
             for fmt in formato:
                 clave, longitud, tipo = fmt[0:3]
-                nombre = dar_nombre_campo(clave)
-                v = d.get(nombre)
+                nombre_campo = dar_nombre_campo(clave)
+                v = record[nombre_campo]
+                
+                # Added explicit type handling and stripping
+                # To ensure consistent data types and remove whitespace
+                if isinstance(v, bytes):
+                    v = v.decode("utf8", "ignore").strip()
+                elif isinstance(v, str):
+                    v = v.strip()
+                if tipo == N:
+                    v = int(v) if v else 0
+                elif tipo == I:
+                    v = float(v) if v else 0.0
+                
                 r[clave] = v
             # agrego
             if formato == ENCABEZADO:
@@ -154,8 +178,11 @@ def leer(archivos=None, carpeta=None):
                     }
                 )
                 regs[r["id"]] = r
-            else:
-                regs[r["id"]][subclave].append(r)
+            elif r["id"] in regs:
+                regs[r["id"]][subclave].append(r)    
+        # Explicitly close the table
+        # To ensure proper resource management
+        tabla.close()
 
     return regs
 
@@ -164,8 +191,11 @@ def escribir(regs, archivos=None, carpeta=None):
     "Grabar en talbas dbf la lista de diccionarios con la factura"
     if DEBUG:
         print("Creando DBF...")
-    if not archivos:
-        filenames = {}
+        
+    # Initialize archivos as an empty dict if it's None
+    # To avoid potential NoneType errors
+    if archivos is None:
+        archivos = {}
 
     for reg in regs:
         formatos = [
@@ -179,38 +209,58 @@ def escribir(regs, archivos=None, carpeta=None):
         ]
         for nombre, formato, l in formatos:
             claves, campos = definir_campos(formato)
-            filename = archivos.get(nombre.lower(), "%s.dbf" % nombre[:8])
+            
+            # Special handling for Encabezado filename
+            # To maintain consistency with the original implementation
+            if nombre == "Encabezado":
+                filename = "Encabeza.dbf"
+            else:
+                filename = archivos.get(nombre.lower(), "%s.dbf" % nombre[:8])
             # construir ruta absoluta si se especifica carpeta
             if carpeta is not None:
                 filename = os.path.join(carpeta, filename)
             if DEBUG:
-                print("leyendo tabla", nombre, filename)
+                print("escribiendo tabla", nombre, filename)
             tabla = dbf.Table(filename, campos)
-
-            for d in l:
-                r = {}
-                for fmt in formato:
-                    clave, longitud, tipo = fmt[0:3]
-                    if clave == "id":
-                        v = reg["id"]
-                    else:
-                        v = d.get(clave, None)
-                    if DEBUG:
-                        print(clave, v, tipo)
-                    if v is None and tipo == A:
-                        v = ""
-                    if (v is None or v == "") and tipo in (I, N):
-                        v = 0
-                    if tipo == A:
-                        if isinstance(v, str):
-                            v = v.encode("utf8", "ignore")
-                        elif isinstance(v, str):
-                            v = v.decode("latin1", "ignore").encode("utf8", "ignore")
+            
+            # Explicitly open the table in READ_WRITE mode
+            # To ensure proper table access for writing
+            tabla.open(dbf.READ_WRITE)
+            try:
+                for d in l:
+                    r = {}
+                    for fmt in formato:
+                        clave, longitud, tipo = fmt[0:3]
+                        if clave == "id":
+                            v = reg["id"]
                         else:
-                            v = str(v)
-                    r[dar_nombre_campo(clave)] = v
-                registro = tabla.append(r)
-            tabla.close()
+                            v = d.get(clave, None)
+                        if DEBUG:
+                            print(clave, v, tipo)
+                        if v is None and tipo == A:
+                            v = ""
+                        if (v is None or v == "") and tipo in (I, N):
+                            v = 0
+                        
+                        # Explicit type casting
+                        # To ensure correct data types are written to the DBF
+                        if tipo == N:
+                            v = int(v)
+                        elif tipo == I: # For import (float) fields, convert to float
+                            v = float(v)
+                        if tipo == A:
+                            if isinstance(v, bytes):
+                                # If v is bytes, decode it to a UTF-8 string
+                                v = v.decode("utf8", "ignore")
+                                # Convert to string and remove leading/trailing whitespace
+                            v = str(v).strip()
+                        
+                        r[dar_nombre_campo(clave)] = v
+                    tabla.append(r)
+            finally:
+                # Ensure table is closed even if an exception occurs
+                # To guarantee proper resource management
+                tabla.close()
 
 
 def ayuda():
