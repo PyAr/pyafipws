@@ -28,12 +28,20 @@ except ImportError:
         print("para soporte de JSON debe instalar simplejson")
 
 
-def leer(fn="entrada.json"):
-    "Analiza un archivo JSON y devuelve un diccionario (confia en que el json este ok)"
-    items = []
-    jsonfile = open(fn, "rb")
-    regs = json.load(jsonfile)
-    return regs
+def leer(archivo):
+    "Leer un archivo JSON y devolver una lista de diccionarios"
+    try:
+        with open(archivo, "r") as jsonfile:
+            content = jsonfile.read().strip()
+            if not content:
+                return []  # Return an empty list if the file is empty or contains only whitespace
+            regs = json.loads(content)
+            return regs
+    except json.decoder.JSONDecodeError as e:
+        raise json.decoder.JSONDecodeError("Error al leer archivo JSON: {}".format(str(e)), e.doc, e.pos)
+    except FileNotFoundError as e:
+        raise FileNotFoundError("Error al leer archivo JSON: {}".format(str(e)))
+
 
 
 def escribir(filas, fn="salida.json", **kwargs):
