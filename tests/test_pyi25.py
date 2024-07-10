@@ -25,7 +25,10 @@ from past.utils import old_div
 import os
 import sys
 import pytest
-import win32com.server.register
+if sys.platform == 'win32':
+    import win32com.server.register
+else:
+    win32com = None
 import win32com.server.localserver
 
 
@@ -136,15 +139,19 @@ def test_DigitoVerificadorModulo10_large_number():
     assert len(result) == 1 and result.isdigit()
 
 
+@pytest.mark.skipif(sys.platform != 'win32', reason="Requires Windows")
 def test_main_with_register(mocker):
-    mocker.patch("win32com.server.register.UseCommandLine")
-    sys.argv = ["pyi25.py", "--register"]
-    main()
-    win32com.server.register.UseCommandLine.assert_called_once_with(PyI25)
+    if win32com:
+        mocker.patch("win32com.server.register.UseCommandLine")
+        sys.argv = ["pyi25.py", "--register"]
+        main()
+        win32com.server.register.UseCommandLine.assert_called_once_with(PyI25)
 
 
+@pytest.mark.skipif(sys.platform != 'win32', reason="Requires Windows")
 def test_main_with_automate(mocker):
-    mocker.patch("win32com.server.localserver.serve")
-    sys.argv = ["pyi25.py", "/Automate"]
-    main()
-    win32com.server.localserver.serve.assert_called_once_with([PyI25._reg_clsid_])
+    if win32com:
+        mocker.patch("win32com.server.localserver.serve")
+        sys.argv = ["pyi25.py", "/Automate"]
+        main()
+        win32com.server.localserver.serve.assert_called_once_with([PyI25._reg_clsid_])
