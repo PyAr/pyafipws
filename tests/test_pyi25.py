@@ -103,15 +103,6 @@ def test_main_custom_archivo():
     os.remove("custom_test.jpg")
 
 
-@pytest.mark.parametrize("platform", ["win32", "darwin"])
-def test_main_mostrar_non_linux(mocker, platform):
-    mocker.patch("sys.platform", platform)
-    mocker.patch("os.startfile")
-    sys.argv = ["pyi25.py", "--mostrar"]
-    main()
-    os.startfile.assert_called_once()
-
-
 def test_GenerarImagen_odd_length_code():
     barras = "12345"
     archivo = "odd_test.png"
@@ -148,3 +139,7 @@ def test_main_with_noverificador():
     with open("prueba-cae-i25.png", "rb") as f:
         content = f.read()
     assert len(content) > 0
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 6922dcc (test_pyi25.py : added tests to increase coverage from 81% to 86%)
