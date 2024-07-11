@@ -139,7 +139,4 @@ def test_main_with_noverificador():
     with open("prueba-cae-i25.png", "rb") as f:
         content = f.read()
     assert len(content) > 0
-<<<<<<< HEAD
-=======
     
->>>>>>> 6922dcc (test_pyi25.py : added tests to increase coverage from 81% to 86%)
