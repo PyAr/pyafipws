@@ -108,3 +108,71 @@ def test_main_csv(auth):
     sys.argv.append("--csv")
     main()
     assert os.path.isfile("salida.csv")
+
+
+@pytest.fixture
+def mock_client(mocker):
+    client = mocker.Mock()
+    client.getPersona.return_value = {
+        "personaReturn": {
+            "persona": {
+                "idPersona": "20000000001",
+                "tipoPersona": "FISICA",
+                "tipoClave": "CUIT",
+                "numeroDocumento": "00000001",
+                "estadoClave": "ACTIVO",
+                "nombre": "John",
+                "apellido": "Doe",
+                "domicilio": [
+                    {
+                        "tipoDomicilio": "FISCAL",
+                        "direccion": "Test Street 123",
+                        "localidad": "Test City",
+                        "idProvincia": "01",
+                        "codPostal": "12345"
+                    }
+                ],
+                "impuesto": [
+                    {"idImpuesto": "30", "estado": "ACTIVO"}
+                ],
+                "actividad": [
+                    {"idActividad": "123456"}
+                ],
+                "categoria": [
+                    {"idImpuesto": "20", "estado": "ACTIVO"}
+                ]
+            }
+        }
+    }
+    return client
+
+def test_consultar(mock_client):
+    ws = WSSrPadronA4()
+    ws.client = mock_client
+    ws.Sign = "test_sign"
+    ws.Token = "test_token"
+    ws.Cuit = "test_cuit"
+
+    result = ws.Consultar("20000000001")
+
+    assert result == True
+    assert ws.cuit == "20000000001"
+    assert ws.tipo_persona == "FISICA"
+    assert ws.tipo_doc == 80
+    assert ws.nro_doc == "00000001"
+    assert ws.estado == "ACTIVO"
+    assert ws.denominacion == "Doe, John"
+    assert ws.direccion == "Test Street 123"
+    assert ws.localidad == "Test City"
+    assert ws.provincia == ""
+    assert ws.cod_postal == "12345"
+    assert ws.domicilio == "Test Street 123 - Test City (12345) - "
+    assert ws.impuestos == ["30"]
+    assert ws.actividades == ["123456"]
+
+    mock_client.getPersona.assert_called_once_with(
+        sign="test_sign",
+        token="test_token",
+        cuitRepresentada="test_cuit",
+        idPersona="20000000001"
+    )
