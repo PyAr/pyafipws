@@ -33,6 +33,7 @@ pytestmark = [pytest.mark.dontusefix]
 
 pyi25 = PyI25()
 
+
 def test_GenerarImagen():
     "Prueba de generación de imagen"
     barras = "2026756539302400161203034739042201105299"
@@ -40,7 +41,7 @@ def test_GenerarImagen():
     pyi25.GenerarImagen(barras, archivo)
 
     assert os.path.exists(archivo)
-    #compare the image with a reference one
+    # compare the image with a reference one
     ref = Image.open("tests/images/prueba-cae-i25.png")
     test = Image.open(archivo)
     diff = ImageChops.difference(ref, test)
@@ -67,9 +68,11 @@ def test_DigitoVerificadorModulo10():
     barras = barras + pyi25.DigitoVerificadorModulo10(barras)
     assert barras == "2026756539302400161203034739042201105299"
 
+
 def test_main():
     sys.argv = []
     main()
+
 
 def test_main_archivo():
     sys.argv = []
@@ -77,11 +80,65 @@ def test_main_archivo():
     sys.argv.append("test123.png")
     main()
 
+
 def test_main_mostrar(mocker):
     mocker.patch("os.system")
     sys.argv = []
     sys.argv.append("--mostrar")
     archivo = "prueba-cae-i25.png"
     main()
-    if(sys.platform == 'linux2' or sys.platform == 'linux'):
+    if sys.platform == "linux2" or sys.platform == "linux":
         os.system.assert_called_with("eog " "%s" "" % archivo)
+
+
+def test_DigitoVerificadorModulo10_edge_cases():
+    assert pyi25.DigitoVerificadorModulo10("") == ""
+    assert pyi25.DigitoVerificadorModulo10("123") == "6"
+    assert pyi25.DigitoVerificadorModulo10("9999999999") == "0"
+
+
+def test_main_custom_archivo():
+    sys.argv = ["pyi25.py", "--archivo", "custom_test.jpg"]
+    main()
+    assert os.path.exists("custom_test.jpg")
+    os.remove("custom_test.jpg")
+
+
+def test_GenerarImagen_odd_length_code():
+    barras = "12345"
+    archivo = "odd_test.png"
+    pyi25.GenerarImagen(barras, archivo)
+    assert os.path.exists(archivo)
+    with Image.open(archivo) as img:
+        assert img.size[0] > len(barras) * 3  # Check if 0 was prepended
+    os.remove(archivo)
+
+
+def test_DigitoVerificadorModulo10_non_digit():
+    assert pyi25.DigitoVerificadorModulo10("12A34") == ""
+
+
+def test_DigitoVerificadorModulo10_large_number():
+    large_number = "9" * 1000
+    result = pyi25.DigitoVerificadorModulo10(large_number)
+    assert len(result) == 1 and result.isdigit()
+
+
+def test_GenerarImagen_with_custom_params():
+    barras = "1234567890"
+    archivo = "custom_params.png"
+    pyi25.GenerarImagen(
+        barras, archivo, basewidth=5, width=300, height=50, extension="PNG"
+    )
+    assert os.path.exists(archivo)
+    with Image.open(archivo) as img:
+        assert img.size == (300, 50)
+
+
+def test_main_with_noverificador():
+    sys.argv = ["pyi25.py", "--barras", "1234567890", "--noverificador"]
+    main()
+    assert os.path.exists("prueba-cae-i25.png")
+    with open("prueba-cae-i25.png", "rb") as f:
+        content = f.read()
+    assert len(content) > 0
