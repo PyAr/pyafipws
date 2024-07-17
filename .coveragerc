@@ -1,7 +1,6 @@
 [run]
 
 omit = 
-        *cot*
         *iibb*
         *nsis*
         */padron.py
