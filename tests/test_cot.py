@@ -1,10 +1,3 @@
-"""Test the COT (Comprobante de Operaciones en Tránsito) module.
-
-This module contains tests for the COT class, which is used to interact with the
-AFIP COT web service. The tests cover various scenarios, including connecting
-to the service, presenting remitos, reading validation responses, and handling
-errors.
-"""
 #!/usr/bin/python
 # -*- coding: utf8 -*-
 # This program is free software; you can redistribute it and/or modify
