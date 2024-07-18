@@ -29,6 +29,7 @@ import time
 import traceback
 
 # revisar la instalación de pyafip.ws:
+from pyafipws.wsaa import WSAA
 from pyafipws import wsfexv1
 from pyafipws.utils import SimpleXMLElement, SoapClient, SoapFault, date
 from pyafipws.utils import leer, escribir, leer_dbf, guardar_dbf, N, A, I, abrir_conf
@@ -333,10 +334,18 @@ def main():
 
     if config.has_option("WSFEXv1", "TIMEOUT"):
         TIMEOUT = int(config.get("WSFEXv1", "TIMEOUT"))
+    
+    # This change handles the case where 'proxy_port' may not be present in the config.
+    # It ensures that we only try to convert 'proxy_port' to an integer if it exists,
+    # preventing KeyError exceptions and making the code more robust to different
+    # configuration scenarios. This modification allows the function to work with
+    # or without proxy settings, improving its flexibility and error handling.
 
     if config.has_section("PROXY") and not HOMO:
         proxy_dict = dict(("proxy_%s" % k, v) for k, v in config.items("PROXY"))
-        proxy_dict["proxy_port"] = int(proxy_dict["proxy_port"])
+        if "proxy_port" in proxy_dict:
+            proxy_dict["proxy_port"] = int(proxy_dict["proxy_port"])
+
     else:
         proxy_dict = {}
 
