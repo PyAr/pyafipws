@@ -25,7 +25,8 @@ try:
 except:
     rev = 0
 
-__version__ = "%s.%s.%s" % (sys.version_info[0:2] + (rev, ))
+__version__ = "3.10.3028"
+
 
 HOMO = True
 
