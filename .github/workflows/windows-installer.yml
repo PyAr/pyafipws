@@ -154,6 +154,18 @@ jobs:
       run: |
         $env:Path += ";$pwd"
         . .\tests\test_rece1.ps1
+    - name: Test pyi25.vbs
+      run: | 
+        .\tests\test_pyi25.ps1
+    - name: Test pyqr.vbs
+      run: |
+        .\tests\test_pyqr.ps1
+    - name: Test factura_electronica.vbs
+      run: | 
+        .\tests\test_factura_electronica.ps1
+    - name: Test remito_electronico_carnico.vbs
+      run: |  
+        .\tests\test_remito_electronico_carnico.ps1   
 
   pre-release:
     name: "Pre Release"
