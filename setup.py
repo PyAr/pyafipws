@@ -19,14 +19,7 @@ import subprocess
 import warnings
 import sys
 
-try:
-    rev = subprocess.check_output(
-        ["git", "rev-list", "--count", "--all"], stderr=subprocess.PIPE
-    ).strip().decode("ascii")
-except:
-    rev = 0
-
-__version__ = "3.10.3027"
+__version__ = "3.10.3028"
 
 HOMO = True
 
