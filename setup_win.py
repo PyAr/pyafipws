@@ -182,7 +182,6 @@ kwargs['windows'] = []
 
 # add 32bit or 64bit tag to the installer name
 import platform
-__version__ += "-" + platform.architecture()[0]
 
 
 # new webservices:
