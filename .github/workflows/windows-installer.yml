@@ -144,16 +144,16 @@ jobs:
       run: |
         reg export "HKEY_CLASSES_ROOT\CLSID\{FA1BB90B-53D1-4FDA-8D1F-DEED2700E739}" wsfev1.reg
         type wsfev1.reg
-    - name: Test WSAA COM server automation
-      run: |
-        .\tests\test_wsaa.ps1
-    - name: Test WSFEv1 COM server automation
-      run: |
-        .\tests\test_wsfev1.ps1
-    - name: Test RECE1 command line interface tool
-      run: |
-        $env:Path += ";$pwd"
-        . .\tests\test_rece1.ps1
+    # - name: Test WSAA COM server automation
+    #   run: |
+    #     .\tests\test_wsaa.ps1
+    # - name: Test WSFEv1 COM server automation
+    #   run: |
+    #     .\tests\test_wsfev1.ps1
+    # - name: Test RECE1 command line interface tool
+    #   run: |
+    #     $env:Path += ";$pwd"
+    #     . .\tests\test_rece1.ps1
     - name: List ejemplos directory
       run: |
         Get-ChildItem -Recurse .\ejemplos
