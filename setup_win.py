@@ -317,8 +317,8 @@ if 'pyi25' in globals():
     kwargs['windows'] += [
         Target(module=pyi25, script="pyi25.py", dest_base="pyi25_com"),
         ]
-    data_files += [
-        ]
+    data_files += [(".", ["ejemplos/pyi25/pyi25.vbs"])]
+
     
 
 if 'pyqr' in globals():
