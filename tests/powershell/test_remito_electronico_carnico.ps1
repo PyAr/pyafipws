@@ -2,30 +2,42 @@
 
 $ErrorActionPreference = "Stop"
 
+# Set the working directory to the root of the repository
+Set-Location $PSScriptRoot\..
+
+# Verify dependencies
+if (-not (Test-Path ".\dist\remito_electronico_carnico.vbs")) {
+    Write-Error "remito_electronico_carnico.vbs not found in dist folder. Ensure all dependencies are installed."
+    exit 1
+}
+
+# Set execution policy for this script
+try {
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+} catch {
+    Write-Warning "Failed to set execution policy. Script may fail if not run with appropriate permissions."
+}
+
 # Run the VBS script and capture its output
-$output = cscript //nologo ejemplos\remito_electronico_carnico.vbs
+try {
+    $output = cscript //nologo .\dist\remito_electronico_carnico.vbs
+    $output | Out-File -FilePath "remito_electronico_carnico_output.log"
+} catch {
+    Write-Error "Failed to execute remito_electronico_carnico.vbs: $_"
+    exit 1
+}
 
 # Check if the script executed successfully
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "remito_electronico_carnico.vbs failed to execute"
+    Write-Error "remito_electronico_carnico.vbs failed to execute with exit code $LASTEXITCODE"
     exit 1
 }
 
 # Test for expected output
 $expectedOutputs = @(
-    "InstallDir",
-    "Token",
-    "Sign",
-    "Ultimo comprobante:",
-    "Resultado:",
-    "Cod Remito:",
-    "Numero Remito:",
-    "Cod Autorizacion:",
-    "Fecha Emision",
-    "Fecha Vencimiento",
-    "Observaciones:",
-    "Errores:",
-    "Evento:"
+    "InstallDir", "Token", "Sign", "Ultimo comprobante:", "Resultado:",
+    "Cod Remito:", "Numero Remito:", "Cod Autorizacion:", "Fecha Emision",
+    "Fecha Vencimiento", "Observaciones:", "Errores:", "Evento:"
 )
 
 foreach ($expected in $expectedOutputs) {

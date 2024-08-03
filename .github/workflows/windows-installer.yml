@@ -154,18 +154,37 @@ jobs:
       run: |
         $env:Path += ";$pwd"
         . .\tests\test_rece1.ps1
-    - name: Copy pyi25.vbs to dist folder
+    - name: List ejemplos directory
       run: |
-        Copy-Item ${{ github.workspace }}\ejemplos\pyi25\pyi25.vbs .\dist\
+        Get-ChildItem -Recurse .\ejemplos
+
+    - name: Create dist folder if not exists
+      run: |
+        New-Item -ItemType Directory -Force -Path .\dist
+
+    - name: Copy VBS files to dist folder
+      run: |
+        Copy-Item .\ejemplos\pyi25\pyi25.vbs .\dist\ -ErrorAction Stop
+        Copy-Item .\ejemplos\pyqr\pyqr.vbs .\dist\ -ErrorAction Stop
+        Copy-Item .\ejemplos\factura_electronica.vbs .\dist\ -ErrorAction Stop
+        Copy-Item .\ejemplos\remito_electronico_carnico.vbs .\dist\ -ErrorAction Stop
+
+    - name: Test pyi25.vbs
+      run: |
+        .\tests\test_pyi25.ps1
+
     - name: Test pyqr.vbs
       run: |
         .\tests\test_pyqr.ps1
+
     - name: Test factura_electronica.vbs
-      run: | 
+      run: |
         .\tests\test_factura_electronica.ps1
+
     - name: Test remito_electronico_carnico.vbs
       run: |  
-        .\tests\test_remito_electronico_carnico.ps1   
+        .\tests\test_remito_electronico_carnico.ps1
+   
 
   pre-release:
     name: "Pre Release"

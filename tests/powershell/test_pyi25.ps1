@@ -6,8 +6,8 @@ $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot\..
 
 # Verify dependencies
-if (-not (Test-Path "${{ github.workspace }}\dist\pyi25.vbs")) {
-    Write-Error "pyi25.vbs not found. Ensure all dependencies are installed."
+if (-not (Test-Path ".\dist\pyi25.vbs")) {
+    Write-Error "pyi25.vbs not found in dist folder. Ensure all dependencies are installed."
     exit 1
 }
 
@@ -20,7 +20,8 @@ try {
 
 # Run the VBS script and capture its output
 try {
-    $output = cscript //nologo .\ejemplos\pyi25\pyi25.vbs
+    $output = cscript //nologo .\dist\pyi25.vbs
+    $output | Out-File -FilePath "pyi25_output.log"
 } catch {
     Write-Error "Failed to execute pyi25.vbs: $_"
     exit 1
@@ -33,23 +34,13 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Test for expected output
-if ($output -notmatch "Version") {
-    Write-Error "Version information not found in output"
-    exit 1
-}
-
-if ($output -notmatch "Barras") {
-    Write-Error "Barcode information not found in output"
-    exit 1
-}
-
-if ($output -notmatch "Listo!") {
-    Write-Error "Script did not complete successfully"
+if ($output -notmatch "Version" -or $output -notmatch "Barras" -or $output -notmatch "Listo!") {
+    Write-Error "Expected output not found in pyi25.vbs execution"
     exit 1
 }
 
 # Check if the output file was created
-if (-not (Test-Path ".\ejemplos\pyi25\barras.png")) {
+if (-not (Test-Path ".\dist\barras.png")) {
     Write-Error "Barcode image file was not created"
     exit 1
 }
