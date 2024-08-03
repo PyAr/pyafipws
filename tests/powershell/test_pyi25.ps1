@@ -45,4 +45,6 @@ if (-not (Test-Path ".\dist\barras.png")) {
     exit 1
 }
 
-Write-Host "All tests for pyi25.vbs passed successfully"
+Write-Host "Current directory: $(Get-Location)"
+Write-Host "Contents of dist folder:"
+Get-ChildItem .\dist
