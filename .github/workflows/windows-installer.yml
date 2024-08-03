@@ -164,11 +164,10 @@ jobs:
 
     - name: Copy VBS files to dist folder
       run: |
-        Copy-Item .\ejemplos\pyi25\pyi25.vbs .\dist\ -ErrorAction Stop
-        Copy-Item .\ejemplos\pyqr\pyqr.vbs .\dist\ -ErrorAction Stop
-        Copy-Item .\ejemplos\factura_electronica.vbs .\dist\ -ErrorAction Stop
-        Copy-Item .\ejemplos\remito_electronico_carnico.vbs .\dist\ -ErrorAction Stop
-
+        Get-ChildItem -Recurse .\ejemplos | Where-Object {$_.Name -like "*.vbs"} | ForEach-Object {
+          Copy-Item $_.FullName .\dist\ -ErrorAction Stop
+        }
+      
     - name: Test pyi25.vbs
       run: |
         .\tests\test_pyi25.ps1
