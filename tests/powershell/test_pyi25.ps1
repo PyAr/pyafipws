@@ -2,12 +2,33 @@
 
 $ErrorActionPreference = "Stop"
 
+# Set the working directory to the root of the repository
+Set-Location $PSScriptRoot\..
+
+# Verify dependencies
+if (-not (Test-Path ".\ejemplos\pyi25\pyi25.vbs")) {
+    Write-Error "pyi25.vbs not found. Ensure all dependencies are installed."
+    exit 1
+}
+
+# Set execution policy for this script
+try {
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+} catch {
+    Write-Warning "Failed to set execution policy. Script may fail if not run with appropriate permissions."
+}
+
 # Run the VBS script and capture its output
-$output = cscript //nologo ejemplos\pyi25\pyi25.vbs
+try {
+    $output = cscript //nologo .\ejemplos\pyi25\pyi25.vbs
+} catch {
+    Write-Error "Failed to execute pyi25.vbs: $_"
+    exit 1
+}
 
 # Check if the script executed successfully
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "pyi25.vbs failed to execute"
+    Write-Error "pyi25.vbs failed to execute with exit code $LASTEXITCODE"
     exit 1
 }
 
@@ -28,7 +49,7 @@ if ($output -notmatch "Listo!") {
 }
 
 # Check if the output file was created
-if (-not (Test-Path "ejemplos\pyi25\barras.png")) {
+if (-not (Test-Path ".\ejemplos\pyi25\barras.png")) {
     Write-Error "Barcode image file was not created"
     exit 1
 }
