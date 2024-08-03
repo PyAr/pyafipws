@@ -156,7 +156,7 @@ jobs:
         . .\tests\test_rece1.ps1
     - name: Copy pyi25.vbs to dist folder
       run: |
-        Copy-Item .\ejemplos\pyi25\pyi25.vbs .\dist\
+        Copy-Item ${{ github.workspace }}\ejemplos\pyi25\pyi25.vbs .\dist\
     - name: Test pyqr.vbs
       run: |
         .\tests\test_pyqr.ps1

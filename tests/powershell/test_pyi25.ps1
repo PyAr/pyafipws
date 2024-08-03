@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot\..
 
 # Verify dependencies
-if (-not (Test-Path ".\dist\pyi25.vbs")) {
+if (-not (Test-Path "${{ github.workspace }}\dist\pyi25.vbs")) {
     Write-Error "pyi25.vbs not found. Ensure all dependencies are installed."
     exit 1
 }
