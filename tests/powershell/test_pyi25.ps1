@@ -48,3 +48,8 @@ if (-not (Test-Path ".\dist\barras.png")) {
 Write-Host "Current directory: $(Get-Location)"
 Write-Host "Contents of dist folder:"
 Get-ChildItem .\dist
+if (-not (Test-Path ".\dist\pyi25.vbs")) {
+    Write-Error "pyi25.vbs not found in dist folder. Ensure all dependencies are installed."
+    exit 1
+}
+

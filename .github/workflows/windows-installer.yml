@@ -164,10 +164,13 @@ jobs:
 
     - name: Copy VBS files to dist folder
       run: |
-        Copy-Item .\ejemplos\pyi25\pyi25.vbs .\dist\ -ErrorAction SilentlyContinue
-        Copy-Item .\ejemplos\pyqr\pyqr.vbs .\dist\ -ErrorAction SilentlyContinue
-        Copy-Item .\ejemplos\factura_electronica.vbs .\dist\ -ErrorAction SilentlyContinue
-        Copy-Item .\ejemplos\remito_electronico_carnico.vbs .\dist\ -ErrorAction SilentlyContinue
+        Copy-Item .\ejemplos\pyi25\pyi25.vbs .\dist\ -ErrorAction Continue -ErrorVariable copyErrors
+        if ($copyErrors) {
+          Write-Host "Error copying pyi25.vbs: $copyErrors"
+        }
+        Copy-Item .\ejemplos\pyqr\pyqr.vbs .\dist\ -ErrorAction Continue
+        Copy-Item .\ejemplos\factura_electronica.vbs .\dist\ -ErrorAction Continue
+        Copy-Item .\ejemplos\remito_electronico_carnico.vbs .\dist\ -ErrorAction Continue
         Get-ChildItem .\dist
          
     - name: Test pyi25.vbs
