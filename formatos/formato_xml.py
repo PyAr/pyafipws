@@ -266,8 +266,11 @@ def mapear(new, old, MAP, swap=False):
     try:
         for k, v in list(MAP.items()):
             if swap:
-                k, v = v, k
-            new[k] = old.get(v)
+                if k in old:
+                    new[v] = old[k]
+            else:
+                if v in old:
+                    new[k] = old[v]
         return new
     except:
         print(new, old, MAP)
@@ -330,7 +333,8 @@ def desserializar(xml):
 def escribir(regs, fn="salida.xml"):
     "Dado una lista de comprobantes (diccionarios), convierte y escribe"
     xml = serializar(regs)
-    open(fn, "wb").write(xml)
+    with open(fn, "wb") as f:
+        f.write(xml.encode("utf-8"))
 
 
 def serializar(regs):
@@ -341,7 +345,7 @@ def serializar(regs):
     for reg in regs:
         dic = {}
         for k, v in list(MAP_ENC.items()):
-            dic[v] = reg[k]
+            dic[v] = reg.get(k, "")
 
         dic.update(
             {
