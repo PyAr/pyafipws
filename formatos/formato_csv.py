@@ -24,43 +24,39 @@ __license__ = "LGPL-3.0-or-later"
 import csv
 from decimal import Decimal
 import os
+from openpyxl import load_workbook
 
-
-def leer(fn="entrada.csv", delimiter=";"):
-    "Analiza un archivo CSV y devuelve un diccionario (aplanado)"
+def leer(fn="entrada.csv", delimiter=";", header=True):
+    "Analiza un archivo CSV y devuelve una lista de listas con los datos"
     ext = os.path.splitext(fn)[1].lower()
     items = []
-    if ext == ".csv":
-        csvfile = open(fn, "rb")
-        # deducir dialecto y delimitador
-        try:
-            dialect = csv.Sniffer().sniff(csvfile.read(256), delimiters=[";", ","])
-        except csv.Error:
-            dialect = csv.excel
-            dialect.delimiter = delimiter
-        csvfile.seek(0)
-        csv_reader = csv.reader(csvfile, dialect)
-        for row in csv_reader:
-            r = []
-            for c in row:
-                if isinstance(c, basestring):
-                    c = c.strip()
-                r.append(c)
-            items.append(r)
-    elif ext == ".xlsx":
-        # extraigo los datos de la planilla Excel
-        from openpyxl import load_workbook
 
+    if ext == ".csv":
+        with open(fn, "r", encoding="utf-8") as csvfile:
+            try:
+                dialect = csv.Sniffer().sniff(csvfile.read(256), delimiters=[delimiter, ","])
+            except csv.Error:
+                dialect = csv.excel
+                dialect.delimiter = delimiter
+            csvfile.seek(0)
+            csv_reader = csv.reader(csvfile, dialect)
+            if header:
+                next(csv_reader, None)  # Skip the header row
+            for row in csv_reader:
+                items.append([c.strip() if isinstance(c, str) else c for c in row])
+
+    elif ext == ".xlsx":
         wb = load_workbook(filename=fn)
-        ws1 = wb.get_active_sheet()
-        for row in ws1.rows:
-            fila = []
-            for cell in row:
-                fila.append(cell.value)
-            items.append(fila)
+        ws1 = wb.active
+        rows = ws1.iter_rows(values_only=True)
+        if header:
+            next(rows, None)  # Skip the header row
+        for row in rows:
+            items.append([cell for cell in row])
+
     return items
     # TODO: return desaplanar(items)
-
+    
 
 def aplanar(regs):
     "Convierte una estructura python en planilla CSV (PyRece)"
@@ -87,64 +83,63 @@ def aplanar(regs):
         if reg.get("cbte_nro"):
             fila["cbt_numero"] = reg["cbte_nro"]
 
-        for i, det in enumerate(reg["detalles"]):
-            li = i + 1
+        for i, det in enumerate(reg.get("detalles", []), start=1):
             fila.update(
                 {
-                    "codigo%s" % li: det.get("codigo", ""),
-                    "descripcion%s" % li: det.get("ds", ""),
-                    "umed%s" % li: det.get("umed"),
-                    "cantidad%s" % li: det.get("qty"),
-                    "precio%s" % li: det.get("precio"),
-                    "importe%s" % li: det.get("importe"),
-                    "iva_id%s" % li: det.get("iva_id"),
-                    "imp_iva%s" % li: det.get("imp_iva"),
-                    "bonif%s" % li: det.get("bonif"),
-                    "numero_despacho%s" % li: det.get("despacho"),
-                    "dato_a%s" % li: det.get("dato_a"),
-                    "dato_b%s" % li: det.get("dato_b"),
-                    "dato_c%s" % li: det.get("dato_c"),
-                    "dato_d%s" % li: det.get("dato_d"),
-                    "dato_e%s" % li: det.get("dato_e"),
+                    "codigo%s" % i: det.get("codigo", ""),
+                    "descripcion%s" % i: det.get("ds", ""),
+                    "umed%s" % i: det.get("umed"),
+                    "cantidad%s" % i: det.get("qty"),
+                    "precio%s" % i: det.get("precio"),
+                    "importe%s" % i: det.get("importe"),
+                    "iva_id%s" % i: det.get("iva_id"),
+                    "imp_iva%s" % i: det.get("imp_iva"),
+                    "bonif%s" % i: det.get("bonif"),
+                    "numero_despacho%s" % i: det.get("despacho"),
+                    "dato_a%s" % i: det.get("dato_a"),
+                    "dato_b%s" % i: det.get("dato_b"),
+                    "dato_c%s" % i: det.get("dato_c"),
+                    "dato_d%s" % i: det.get("dato_d"),
+                    "dato_e%s" % i: det.get("dato_e"),
                 }
             )
-        for i, iva in enumerate(reg["ivas"]):
-            li = i + 1
+
+        for i, iva in enumerate(reg.get("ivas", []), start=1):
             fila.update(
                 {
-                    "iva_id_%s" % li: iva["iva_id"],
-                    "iva_base_imp_%s" % li: iva["base_imp"],
-                    "iva_importe_%s" % li: iva["importe"],
+                    "iva_id_%s" % i: iva.get("iva_id"),
+                    "iva_base_imp_%s" % i: iva.get("base_imp"),
+                    "iva_importe_%s" % i: iva.get("importe"),
                 }
             )
-        for i, tributo in enumerate(reg["tributos"]):
-            li = i + 1
+
+        for i, tributo in enumerate(reg.get("tributos", []), start=1):
             fila.update(
                 {
-                    "tributo_id_%s" % li: tributo["tributo_id"],
-                    "tributo_base_imp_%s" % li: tributo["base_imp"],
-                    "tributo_desc_%s" % li: tributo["desc"],
-                    "tributo_alic_%s" % li: tributo["alic"],
-                    "tributo_importe_%s" % li: tributo["importe"],
+                    "tributo_id_%s" % i: tributo.get("tributo_id"),
+                    "tributo_base_imp_%s" % i: tributo.get("base_imp"),
+                    "tributo_desc_%s" % i: tributo.get("desc"),
+                    "tributo_alic_%s" % i: tributo.get("alic"),
+                    "tributo_importe_%s" % i: tributo.get("importe"),
                 }
             )
-        for i, opcional in enumerate(reg.get("opcionales", [])):
-            li = i + 1
+
+        for i, opcional in enumerate(reg.get("opcionales", []), start=1):
             fila.update(
                 {
-                    "opcional_id_%s" % li: opcional["opcional_id"],
-                    "opcional_valor_%s" % li: opcional["valor"],
+                    "opcional_id_%s" % i: opcional.get("opcional_id"),
+                    "opcional_valor_%s" % i: opcional.get("valor"),
                 }
             )
-        for i, cbte_asoc in enumerate(reg.get("cbtes_asoc", [])):
-            li = i + 1
+
+        for i, cbte_asoc in enumerate(reg.get("cbtes_asoc", []), start=1):
             fila.update(
                 {
-                    "cbte_asoc_tipo_%s" % li: cbte_asoc["cbte_tipo"],
-                    "cbte_asoc_pto_vta_%s" % li: cbte_asoc["cbte_punto_vta"],
-                    "cbte_asoc_nro_%s" % li: cbte_asoc["cbte_nro"],
-                    "cbte_asoc_cuit_%s" % li: cbte_asoc["cbte_cuit"],
-                    "cbte_asoc_fecha_%s" % li: cbte_asoc["cbte_fecha"],
+                    "cbte_asoc_tipo_%s" % i: cbte_asoc.get("cbte_tipo"),
+                    "cbte_asoc_pto_vta_%s" % i: cbte_asoc.get("cbte_punto_vta"),
+                    "cbte_asoc_nro_%s" % i: cbte_asoc.get("cbte_nro"),
+                    "cbte_asoc_cuit_%s" % i: cbte_asoc.get("cbte_cuit"),
+                    "cbte_asoc_fecha_%s" % i: cbte_asoc.get("cbte_fecha"),
                 }
             )
 
@@ -188,18 +183,22 @@ def aplanar(regs):
         "numero_remito",
         "obs_generales",
         "obs_comerciales",
+        "forma_pago",
+        "pdf",
     ]
 
     # filtro y ordeno las columnas
     l = [k for f in filas for k in list(f.keys())]
     s = set(l) - set(cols)
-    cols = cols + list(s)
+    cols.extend(sorted(s))
 
     ret = [cols]
     for fila in filas:
         ret.append([fila.get(k) for k in cols])
 
     return ret
+
+
 
 
 def desaplanar(filas):
@@ -339,22 +338,16 @@ def escribir(filas, fn="salida.csv", delimiter=";"):
     "Dado una lista de comprobantes (diccionarios), aplana y escribe"
     ext = os.path.splitext(fn)[1].lower()
     if ext == ".csv":
-        f = open(fn, "wb")
-        csv_writer = csv.writer(f, dialect="excel", delimiter=";")
-        # TODO: filas = aplanar(regs)
-        for fila in filas:
-            # convertir a ISO-8859-1 (evita error de encoding de csv writer):
-            fila = [
-                celda.encode("latin1") if isinstance(celda, str) else celda
-                for celda in fila
-            ]
-            csv_writer.writerow(fila)
-        f.close()
+        with open(fn, "w", newline="") as f:
+            csv_writer = csv.writer(f, dialect="excel", delimiter=delimiter)
+            # TODO: filas = aplanar(regs)
+            for fila in filas:
+                csv_writer.writerow(fila)
     elif ext == ".xlsx":
         from openpyxl import Workbook
 
         wb = Workbook()
-        ws1 = wb.get_active_sheet()
+        ws1 = wb.active
         for fila in filas:
             ws1.append(fila)
         wb.save(filename=fn)
