@@ -18,7 +18,6 @@ __license__ = "GPL 3.0"
 
 import os
 import sys
-import unittest
 import csv
 import pytest
 import tempfile
@@ -35,7 +34,7 @@ sys.path.insert(0, formatos_dir)
 
 
 @pytest.mark.dontusefix
-class TestLeerFunction(unittest.TestCase):
+class TestLeerFunction:
     def test_leer_csv_file(self):
         """
         Test that the leer function can read a valid CSV file correctly.
@@ -121,7 +120,7 @@ class TestLeerFunction(unittest.TestCase):
             ]
         ]
         result = leer("datos/facturas.csv", delimiter=";")
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
     def test_leer_csv_custom_delimiter(self):
         """
@@ -140,7 +139,7 @@ class TestLeerFunction(unittest.TestCase):
 
         with patch("builtins.open", return_value=StringIO(sample_csv_data)):
             result = leer("data/sample.csv", delimiter="|")
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
     def test_leer_csv_with_header(self):
         """
@@ -159,7 +158,7 @@ class TestLeerFunction(unittest.TestCase):
 
         with patch("builtins.open", return_value=StringIO(sample_csv_data)):
             result = leer("data/sample.csv")
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
     def test_leer_csv_without_header(self):
         """
@@ -177,7 +176,7 @@ class TestLeerFunction(unittest.TestCase):
 
         with patch("builtins.open", return_value=StringIO(sample_csv_data)):
             result = leer("data/sample.csv", header=False)
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
     def test_leer_csv_with_whitespace(self):
         """
@@ -196,7 +195,7 @@ class TestLeerFunction(unittest.TestCase):
 
         with patch("builtins.open", return_value=StringIO(sample_csv_data)):
             result = leer("data/sample.csv")
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
     def test_leer_csv_with_non_string_values(self):
         """
@@ -215,7 +214,7 @@ class TestLeerFunction(unittest.TestCase):
 
         with patch("builtins.open", return_value=StringIO(sample_csv_data)):
             result = leer("data/sample.csv")
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
     def test_leer_csv_different_dialect(self):
         """
@@ -234,7 +233,7 @@ class TestLeerFunction(unittest.TestCase):
 
         with patch("builtins.open", return_value=StringIO(sample_csv_data)):
             result = leer("data/sample.csv", delimiter=";")
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
     def test_leer_csv_empty_file(self):
         """
@@ -245,7 +244,7 @@ class TestLeerFunction(unittest.TestCase):
 
         with patch("builtins.open", return_value=StringIO(sample_csv_data)):
             result = leer("data/sample.csv")
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
     def test_leer_xlsx_file_with_header(self):
         """
@@ -273,7 +272,7 @@ class TestLeerFunction(unittest.TestCase):
             workbook.save(temp_file.name)
 
             result = leer(temp_file.name)
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
         # Clean up the temporary file
         os.unlink(temp_file.name)
@@ -301,14 +300,14 @@ class TestLeerFunction(unittest.TestCase):
             workbook.save(temp_file.name)
 
             result = leer(temp_file.name, header=False)
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
         # Clean up the temporary file
         os.unlink(temp_file.name)
 
 
 @pytest.mark.dontusefix
-class TestAplanarFunction(unittest.TestCase):
+class TestAplanarFunction:
     def test_aplanar_single_record(self):
         """
         Test that the aplanar function correctly flattens a single record.
@@ -536,7 +535,7 @@ class TestAplanarFunction(unittest.TestCase):
         ]
 
         result = aplanar([reg])
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
     def test_aplanar_multiple_records(self):
         """
@@ -887,11 +886,11 @@ class TestAplanarFunction(unittest.TestCase):
         ]
 
         result = aplanar(regs)
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
 
 @pytest.mark.dontusefix
-class TestDesplanarFunction(unittest.TestCase):
+class TestDesplanarFunction:
     def test_desaplanar_single_record(self):
         """
         Test that the desaplanar function correctly converts
@@ -1096,7 +1095,7 @@ class TestDesplanarFunction(unittest.TestCase):
         ]
 
         result = desaplanar(filas)
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
     def test_desaplanar_multiple_records(self):
         """
@@ -1436,11 +1435,11 @@ class TestDesplanarFunction(unittest.TestCase):
         ]
 
         result = desaplanar(filas)
-        self.assertEqual(result, expected_data)
+        assert result == expected_data
 
 
 @pytest.mark.dontusefix
-class TestEscribirFunction(unittest.TestCase):
+class TestEscribirFunction:
     def test_escribir_facturas_csv(self):
         """
         Test that the escribir function can write data
@@ -1456,14 +1455,14 @@ class TestEscribirFunction(unittest.TestCase):
         escribir(filas, filename)
 
         # Check if the file was created
-        self.assertTrue(os.path.exists(filename))
+        assert os.path.isfile(filename)
 
         # Read the contents of the output file and compare
         # with the original data
         with open(filename, "r", newline="") as file:
             csv_reader = csv.reader(file, delimiter=";")
             result = [row for row in csv_reader]
-        self.assertEqual(result, filas)
+        assert result == filas
 
         # Clean up the test file
         os.remove(filename)
@@ -1483,7 +1482,7 @@ class TestEscribirFunction(unittest.TestCase):
         escribir(filas, filename)
 
         # Check if the file was created
-        self.assertTrue(os.path.exists(filename))
+        assert os.path.isfile(filename)
 
         # Read the contents of the XLSX file and compare with the original data
         workbook = load_workbook(filename)
@@ -1493,11 +1492,8 @@ class TestEscribirFunction(unittest.TestCase):
             # Convert None values to empty strings
             row = ["" if cell is None else str(cell) for cell in row]
             result.append(row)
-        self.assertEqual(result, filas)
+        assert result == filas
 
         # Clean up the test file
         os.remove(filename)
 
-
-if __name__ == "__main__":
-    unittest.main()
