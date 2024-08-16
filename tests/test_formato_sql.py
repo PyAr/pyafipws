@@ -17,11 +17,35 @@ __copyright__ = "Copyright (C) 2010-2019 Mariano Reingart"
 __license__ = "GPL 3.0"
 
 import pytest
-import io
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
-from pyafipws.formatos.formato_sql import esquema_sql, leer, configurar, ejecutar, max_id, redondear, escribir, modificar, ayuda, CAE_NULL, FECHA_VTO_NULL, RESULTADO_NULL, NULL
-from pyafipws.formatos.formato_txt import ENCABEZADO, DETALLE, TRIBUTO, IVA, CMP_ASOC, PERMISO, A, N, I
+from pyafipws.formatos.formato_sql import (
+    esquema_sql,
+    leer,
+    configurar,
+    ejecutar,
+    max_id,
+    redondear,
+    escribir,
+    modificar,
+    ayuda,
+    CAE_NULL,
+    FECHA_VTO_NULL,
+    RESULTADO_NULL,
+    NULL,
+)
+from pyafipws.formatos.formato_txt import (
+    ENCABEZADO,
+    DETALLE,
+    TRIBUTO,
+    IVA,
+    CMP_ASOC,
+    PERMISO,
+    A,
+    N,
+    I,
+)
+
 
 @pytest.mark.dontusefix
 class TestFormatoSQL:
@@ -198,7 +222,8 @@ class TestFormatoSQL:
         assert list(esquema_sql(tipos_registro, conf)) == expected_output
 
     def test_esquema_sql_detalle_with_conf(self, auth):
-        # Prueba para generar el esquema SQL de la tabla "detalle" con configuración personalizada
+        # Prueba para generar el esquema SQL de la tabla "detalle"
+        # con configuración personalizada
         tipos_registro = [("detalle", DETALLE)]
         conf = {"detalle": {"qty": "cantidad"}}
         expected_output = [
@@ -229,7 +254,8 @@ class TestFormatoSQL:
         assert list(esquema_sql(tipos_registro, conf)) == expected_output
 
     def test_esquema_sql_tributo_with_conf(self, auth):
-        # Prueba para generar el esquema SQL de la tabla "tributo" con configuración personalizada
+        # Prueba para generar el esquema SQL de la tabla "tributo"
+        # con configuración personalizada
         tipos_registro = [("tributo", TRIBUTO)]
         conf = {"tributo": {"desc": "descripcion"}}
         expected_output = [
@@ -246,7 +272,8 @@ class TestFormatoSQL:
         assert list(esquema_sql(tipos_registro, conf)) == expected_output
 
     def test_esquema_sql_iva_with_conf(self, auth):
-        # Prueba para generar el esquema SQL de la tabla "iva" con configuración personalizada
+        # Prueba para generar el esquema SQL de la tabla "iva"
+        # con configuración personalizada
         tipos_registro = [("iva", IVA)]
         conf = {"iva": {"importe": "imp_iva"}}
         expected_output = [
@@ -261,7 +288,8 @@ class TestFormatoSQL:
         assert list(esquema_sql(tipos_registro, conf)) == expected_output
 
     def test_esquema_sql_cmp_asoc_with_conf(self, auth):
-        # Prueba para generar el esquema SQL de la tabla "cmp_asoc" con configuración personalizada
+        # Prueba para generar el esquema SQL de la tabla "cmp_asoc"
+        # con configuración personalizada
         tipos_registro = [("cmp_asoc", CMP_ASOC)]
         conf = {"cmp_asoc": {"cbte_nro": "numero"}}
         expected_output = [
@@ -278,7 +306,8 @@ class TestFormatoSQL:
         assert list(esquema_sql(tipos_registro, conf)) == expected_output
 
     def test_esquema_sql_permiso_with_conf(self, auth):
-        # Prueba para generar el esquema SQL de la tabla "permiso" con configuración personalizada
+        # Prueba para generar el esquema SQL de la tabla "permiso"
+        # con configuración personalizada
         tipos_registro = [("permiso", PERMISO)]
         conf = {"permiso": {"dst_merc": "destino"}}
         expected_output = [
@@ -290,7 +319,6 @@ class TestFormatoSQL:
             ")\n;"
         ]
         assert list(esquema_sql(tipos_registro, conf)) == expected_output
-    
 
 
 @pytest.mark.dontusefix
@@ -401,7 +429,6 @@ class TestConfigurar:
         assert campos == expected_campos
         assert campos_rev == expected_campos_rev
 
-
     def test_configurar_with_empty_schema(self):
         # Test configuring with an empty schema
         schema = {}
@@ -467,15 +494,17 @@ class TestConfigurar:
         assert campos_rev == expected_campos_rev
 
 
-
 @pytest.mark.dontusefix
 class TestEjecutar:
-    
+
     def test_ejecutar_without_params(self, mocker):
         # Test executing a query without parameters
         cur = MagicMock()
         sql = "SELECT * FROM tabla"
-        mocker.patch('pyafipws.formatos.formato_sql.ejecutar', return_value=None)
+        mocker.patch(
+            "pyafipws.formatos.formato_sql.ejecutar",
+            return_value=None
+        )
         ejecutar(cur, sql)
         cur.execute.assert_called_once_with(sql)
 
@@ -484,7 +513,10 @@ class TestEjecutar:
         cur = MagicMock()
         sql = "SELECT * FROM tabla WHERE id = ?"
         params = (1,)
-        mocker.patch('pyafipws.formatos.formato_sql.ejecutar', return_value=None)
+        mocker.patch(
+            "pyafipws.formatos.formato_sql.ejecutar",
+            return_value=None
+        )
         ejecutar(cur, sql, params)
         cur.execute.assert_called_once_with(sql, params)
 
@@ -502,7 +534,7 @@ class TestEjecutar:
         cur = MagicMock()
         sql = "SELECT * FROM tabla WHERE id = ?"
         params = (1,)
-        mocker.patch('pyafipws.formatos.formato_sql.DEBUG', True)
+        mocker.patch("pyafipws.formatos.formato_sql.DEBUG", True)
         ejecutar(cur, sql, params)
         captured = capsys.readouterr()
         assert captured.out == "SELECT * FROM tabla WHERE id = ? (1,)\n"
@@ -511,14 +543,16 @@ class TestEjecutar:
         # Test that ejecutar does not print anything when DEBUG is False
         cur = MagicMock()
         sql = "SELECT * FROM tabla"
-        mocker.patch('pyafipws.formatos.formato_sql.DEBUG', False)
+        mocker.patch("pyafipws.formatos.formato_sql.DEBUG", False)
         ejecutar(cur, sql)
         captured = capsys.readouterr()
         assert captured.out == ""
-        
+
+
 @pytest.fixture
 def db_mock():
     return MagicMock()
+
 
 @pytest.fixture
 def cur_mock(db_mock):
@@ -526,14 +560,22 @@ def cur_mock(db_mock):
     db_mock.cursor.return_value = cur_mock
     return cur_mock
 
+
 @pytest.mark.dontusefix
 class TestMaxId:
     def test_max_id_with_existing_id(self, db_mock, cur_mock, mocker):
         schema = {}
         expected_max_id = 42
         cur_mock.fetchone.return_value = (expected_max_id,)
-        configurar_mock = mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'encabezado'}, {'encabezado': {'id': 'id'}}, {}))
-        ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar')
+        configurar_mock = mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {"encabezado": "encabezado"},
+                {"encabezado": {"id": "id"}},
+                {},
+            ),
+        )
+        ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
 
         result = max_id(db_mock, schema)
 
@@ -547,8 +589,15 @@ class TestMaxId:
     def test_max_id_with_no_existing_id(self, db_mock, cur_mock, mocker):
         schema = {}
         cur_mock.fetchone.return_value = (None,)
-        configurar_mock = mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'encabezado'}, {'encabezado': {'id': 'id'}}, {}))
-        ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar')
+        configurar_mock = mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {"encabezado": "encabezado"},
+                {"encabezado": {"id": "id"}},
+                {},
+            ),
+        )
+        ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
 
         result = max_id(db_mock, schema)
 
@@ -560,11 +609,18 @@ class TestMaxId:
         cur_mock.close.assert_called_once()
 
     def test_max_id_with_custom_schema(self, db_mock, cur_mock, mocker):
-        schema = {'encabezado': {'custom_id': 'id'}}
+        schema = {"encabezado": {"custom_id": "id"}}
         expected_max_id = 42
         cur_mock.fetchone.return_value = (expected_max_id,)
-        configurar_mock = mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'custom_encabezado'}, {'encabezado': {'id': 'custom_id'}}, {}))
-        ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar')
+        configurar_mock = mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {"encabezado": "custom_encabezado"},
+                {"encabezado": {"id": "custom_id"}},
+                {},
+            ),
+        )
+        ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
 
         result = max_id(db_mock, schema)
 
@@ -578,8 +634,15 @@ class TestMaxId:
     def test_max_id_with_empty_result(self, db_mock, cur_mock, mocker):
         schema = {}
         cur_mock.fetchone.return_value = None
-        configurar_mock = mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'encabezado'}, {'encabezado': {'id': 'id'}}, {}))
-        ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar')
+        configurar_mock = mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {"encabezado": "encabezado"},
+                {"encabezado": {"id": "id"}},
+                {},
+            ),
+        )
+        ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
 
         result = max_id(db_mock, schema)
 
@@ -592,20 +655,29 @@ class TestMaxId:
 
     def test_max_id_with_exception(self, db_mock, cur_mock, mocker):
         schema = {}
-        configurar_mock = mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'encabezado'}, {'encabezado': {'id': 'id'}}, {}))
-        ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar', side_effect=Exception('Database error'))
+        configurar_mock = mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {"encabezado": "encabezado"},
+                {"encabezado": {"id": "id"}},
+                {},
+            ),
+        )
+        ejecutar_mock = mocker.patch(
+            "pyafipws.formatos.formato_sql.ejecutar",
+            side_effect=Exception("Database error"),
+        )
 
         with pytest.raises(Exception) as exc_info:
             max_id(db_mock, schema)
 
-        assert str(exc_info.value) == 'Database error'
+        assert str(exc_info.value) == "Database error"
         db_mock.cursor.assert_called_once()
         configurar_mock.assert_called_once_with(schema)
         ejecutar_mock.assert_called_once()
         cur_mock.fetchone.assert_not_called()
         cur_mock.close.assert_called_once()
-        
-        
+
 
 @pytest.mark.dontusefix
 class TestRedondear:
@@ -700,124 +772,288 @@ class TestRedondear:
         result = redondear(formato, clave, valor)
 
         assert result is None
-        print.assert_called_once_with("IMPOSIBLE REDONDEAR:", clave, valor, mocker.ANY)
-        
-        
-        
-        
+        print.assert_called_once_with(
+            "IMPOSIBLE REDONDEAR:",
+            clave,
+            valor,
+            mocker.ANY
+        )
+
+
 @pytest.fixture
 def db_mock():
     return MagicMock()
+
 
 @pytest.fixture
 def cur_mock(db_mock):
     cur_mock = MagicMock()
     db_mock.cursor.return_value = cur_mock
-    return cur_mock  
-   
-     
-@pytest.mark.dontusefix 
-class Test_escribir:  
+    return cur_mock
+
+
+@pytest.mark.dontusefix
+class Test_escribir:
     def test_escribir_without_id(self, db_mock, cur_mock, mocker):
-            facts = [{"campo1": "valor1", "campo2": "valor2", "detalles": []}]
-            schema = {}
-            mocker.patch('pyafipws.formatos.formato_sql.max_id', return_value=1)
-            mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'encabezado', 'detalle': 'detalle'}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}}))
-            ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar')
+        facts = [{"campo1": "valor1", "campo2": "valor2", "detalles": []}]
+        schema = {}
+        mocker.patch("pyafipws.formatos.formato_sql.max_id", return_value=1)
+        mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {"encabezado": "encabezado", "detalle": "detalle"},
+                {"encabezado": {"id": "id"}, "detalle": {"id": "id"}},
+                {"encabezado": {"id": "id"}, "detalle": {"id": "id"}},
+            ),
+        )
+        ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
 
-            escribir(facts, db_mock, schema)
+        escribir(facts, db_mock, schema)
 
-            assert ejecutar_mock.call_count == 1
-            db_mock.commit.assert_called_once()
+        assert ejecutar_mock.call_count == 1
+        db_mock.commit.assert_called_once()
 
     def test_escribir_with_id(self, db_mock, cur_mock, mocker):
-            facts = [{"id": 1, "campo1": "valor1", "campo2": "valor2", "detalles": []}]
-            schema = {}
-            mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'encabezado', 'detalle': 'detalle'}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}}))
-            ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar')
+        facts = [{"id": 1, "campo1": "valor1", "campo2": "valor2", "detalles": []}]
+        schema = {}
+        mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {"encabezado": "encabezado", "detalle": "detalle"},
+                {"encabezado": {"id": "id"}, "detalle": {"id": "id"}},
+                {"encabezado": {"id": "id"}, "detalle": {"id": "id"}},
+            ),
+        )
+        ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
 
-            escribir(facts, db_mock, schema)
+        escribir(facts, db_mock, schema)
 
-            assert ejecutar_mock.call_count == 1
-            db_mock.commit.assert_called_once()
+        assert ejecutar_mock.call_count == 1
+        db_mock.commit.assert_called_once()
 
     def test_escribir_with_detalles(self, db_mock, cur_mock, mocker):
-            facts = [{"id": 1, "campo1": "valor1", "campo2": "valor2", "detalles": [{"detalle1": "valor1"}, {"detalle2": "valor2"}]}]
-            schema = {}
-            mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'encabezado', 'detalle': 'detalle'}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}}))
-            ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar')
+        facts = [
+            {
+                "id": 1,
+                "campo1": "valor1",
+                "campo2": "valor2",
+                "detalles": [{"detalle1": "valor1"}, {"detalle2": "valor2"}],
+            }
+        ]
+        schema = {}
+        mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {"encabezado": "encabezado", "detalle": "detalle"},
+                {"encabezado": {"id": "id"}, "detalle": {"id": "id"}},
+                {"encabezado": {"id": "id"}, "detalle": {"id": "id"}},
+            ),
+        )
+        ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
 
-            escribir(facts, db_mock, schema)
+        escribir(facts, db_mock, schema)
 
-            assert ejecutar_mock.call_count == 3
-            db_mock.commit.assert_called_once()
+        assert ejecutar_mock.call_count == 3
+        db_mock.commit.assert_called_once()
 
     def test_escribir_with_cbtes_asoc(self, db_mock, cur_mock, mocker):
-            facts = [{"id": 1, "campo1": "valor1", "campo2": "valor2", "detalles": [], "cbtes_asoc": [{"cbte_asoc1": "valor1"}, {"cbte_asoc2": "valor2"}]}]
-            schema = {}
-            mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'encabezado', 'detalle': 'detalle', 'cmp_asoc': 'cmp_asoc'}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}, 'cmp_asoc': {'id': 'id'}}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}, 'cmp_asoc': {'id': 'id'}}))
-            ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar')
+        facts = [
+            {
+                "id": 1,
+                "campo1": "valor1",
+                "campo2": "valor2",
+                "detalles": [],
+                "cbtes_asoc": [{"cbte_asoc1": "valor1"}, {"cbte_asoc2": "valor2"}],
+            }
+        ]
+        schema = {}
+        mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {
+                    "encabezado": "encabezado",
+                    "detalle": "detalle",
+                    "cmp_asoc": "cmp_asoc",
+                },
+                {
+                    "encabezado": {"id": "id"},
+                    "detalle": {"id": "id"},
+                    "cmp_asoc": {"id": "id"},
+                },
+                {
+                    "encabezado": {"id": "id"},
+                    "detalle": {"id": "id"},
+                    "cmp_asoc": {"id": "id"},
+                },
+            ),
+        )
+        ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
 
-            escribir(facts, db_mock, schema)
+        escribir(facts, db_mock, schema)
 
-            assert ejecutar_mock.call_count == 3
-            db_mock.commit.assert_called_once()
+        assert ejecutar_mock.call_count == 3
+        db_mock.commit.assert_called_once()
 
     def test_escribir_with_permisos(self, db_mock, cur_mock, mocker):
-            facts = [{"id": 1, "campo1": "valor1", "campo2": "valor2", "detalles": [], "permisos": [{"permiso1": "valor1"}, {"permiso2": "valor2"}]}]
-            schema = {}
-            mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'encabezado', 'detalle': 'detalle', 'permiso': 'permiso'}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}, 'permiso': {'id': 'id'}}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}, 'permiso': {'id': 'id'}}))
-            ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar')
+        facts = [
+            {
+                "id": 1,
+                "campo1": "valor1",
+                "campo2": "valor2",
+                "detalles": [],
+                "permisos": [{"permiso1": "valor1"}, {"permiso2": "valor2"}],
+            }
+        ]
+        schema = {}
+        mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {
+                    "encabezado": "encabezado",
+                    "detalle": "detalle",
+                    "permiso": "permiso",
+                },
+                {
+                    "encabezado": {"id": "id"},
+                    "detalle": {"id": "id"},
+                    "permiso": {"id": "id"},
+                },
+                {
+                    "encabezado": {"id": "id"},
+                    "detalle": {"id": "id"},
+                    "permiso": {"id": "id"},
+                },
+            ),
+        )
+        ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
 
-            escribir(facts, db_mock, schema)
+        escribir(facts, db_mock, schema)
 
-            assert ejecutar_mock.call_count == 3
-            db_mock.commit.assert_called_once()
+        assert ejecutar_mock.call_count == 3
+        db_mock.commit.assert_called_once()
 
     def test_escribir_with_tributos(self, db_mock, cur_mock, mocker):
-            facts = [{"id": 1, "campo1": "valor1", "campo2": "valor2", "detalles": [], "tributos": [{"tributo1": "valor1"}, {"tributo2": "valor2"}]}]
-            schema = {}
-            mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'encabezado', 'detalle': 'detalle', 'tributo': 'tributo'}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}, 'tributo': {'id': 'id'}}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}, 'tributo': {'id': 'id'}}))
-            ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar')
+        facts = [
+            {
+                "id": 1,
+                "campo1": "valor1",
+                "campo2": "valor2",
+                "detalles": [],
+                "tributos": [{"tributo1": "valor1"}, {"tributo2": "valor2"}],
+            }
+        ]
+        schema = {}
+        mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {
+                    "encabezado": "encabezado",
+                    "detalle": "detalle",
+                    "tributo": "tributo",
+                },
+                {
+                    "encabezado": {"id": "id"},
+                    "detalle": {"id": "id"},
+                    "tributo": {"id": "id"},
+                },
+                {
+                    "encabezado": {"id": "id"},
+                    "detalle": {"id": "id"},
+                    "tributo": {"id": "id"},
+                },
+            ),
+        )
+        ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
 
-            escribir(facts, db_mock, schema)
+        escribir(facts, db_mock, schema)
 
-            assert ejecutar_mock.call_count == 3
-            db_mock.commit.assert_called_once()
+        assert ejecutar_mock.call_count == 3
+        db_mock.commit.assert_called_once()
 
     def test_escribir_with_ivas(self, db_mock, cur_mock, mocker):
-            facts = [{"id": 1, "campo1": "valor1", "campo2": "valor2", "detalles": [], "ivas": [{"iva1": "valor1"}, {"iva2": "valor2"}]}]
-            schema = {}
-            mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'encabezado', 'detalle': 'detalle', 'iva': 'iva'}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}, 'iva': {'id': 'id'}}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}, 'iva': {'id': 'id'}}))
-            ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar')
+        facts = [
+            {
+                "id": 1,
+                "campo1": "valor1",
+                "campo2": "valor2",
+                "detalles": [],
+                "ivas": [{"iva1": "valor1"}, {"iva2": "valor2"}],
+            }
+        ]
+        schema = {}
+        mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {"encabezado": "encabezado", "detalle": "detalle", "iva": "iva"},
+                {
+                    "encabezado": {"id": "id"},
+                    "detalle": {"id": "id"},
+                    "iva": {"id": "id"},
+                },
+                {
+                    "encabezado": {"id": "id"},
+                    "detalle": {"id": "id"},
+                    "iva": {"id": "id"},
+                },
+            ),
+        )
+        ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
 
-            escribir(facts, db_mock, schema)
+        escribir(facts, db_mock, schema)
 
-            assert ejecutar_mock.call_count == 3
-            db_mock.commit.assert_called_once()
+        assert ejecutar_mock.call_count == 3
+        db_mock.commit.assert_called_once()
 
     def test_escribir_without_commit(self, db_mock, cur_mock, mocker):
-            facts = [{"id": 1, "campo1": "valor1", "campo2": "valor2", "detalles": []}]
-            schema = {}
-            mocker.patch('pyafipws.formatos.formato_sql.configurar', return_value=({'encabezado': 'encabezado', 'detalle': 'detalle'}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}}, {'encabezado': {'id': 'id'}, 'detalle': {'id': 'id'}}))
-            ejecutar_mock = mocker.patch('pyafipws.formatos.formato_sql.ejecutar')
+        facts = [{"id": 1, "campo1": "valor1", "campo2": "valor2", "detalles": []}]
+        schema = {}
+        mocker.patch(
+            "pyafipws.formatos.formato_sql.configurar",
+            return_value=(
+                {"encabezado": "encabezado", "detalle": "detalle"},
+                {"encabezado": {"id": "id"}, "detalle": {"id": "id"}},
+                {"encabezado": {"id": "id"}, "detalle": {"id": "id"}},
+            ),
+        )
+        ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
 
-            escribir(facts, db_mock, schema, commit=False)
+        escribir(facts, db_mock, schema, commit=False)
 
-            assert ejecutar_mock.call_count == 1
-            db_mock.commit.assert_not_called()  
-            
-            
-            
-            
-            
+        assert ejecutar_mock.call_count == 1
+        db_mock.commit.assert_not_called()
+
+
 @pytest.mark.dontusefix
-@pytest.mark.parametrize("cae, fecha_vto, resultado, reproceso, motivo_obs, err_code, err_msg, cbte_nro", [
-    ("12345678901234", "20230101", "A", "S", "Observación", "00", "Error mensaje", "1"),
-    ("NULL", None, None, None, None, None, None, "2"),
-    ("", None, "", "", "", "", "", "3"),
-])
-def test_modificar(db_mock, cur_mock, mocker, cae, fecha_vto, resultado, reproceso, motivo_obs, err_code, err_msg, cbte_nro):
+@pytest.mark.parametrize(
+    "cae, fecha_vto, resultado, reproceso, motivo_obs, err_code, err_msg, cbte_nro",
+    [
+        (
+            "12345678901234",
+            "20230101",
+            "A",
+            "S",
+            "Observación",
+            "00",
+            "Error mensaje",
+            "1",
+        ),
+        ("NULL", None, None, None, None, None, None, "2"),
+        ("", None, "", "", "", "", "", "3"),
+    ],
+)
+def test_modificar(
+    db_mock,
+    cur_mock,
+    mocker,
+    cae,
+    fecha_vto,
+    resultado,
+    reproceso,
+    motivo_obs,
+    err_code,
+    err_msg,
+    cbte_nro,
+):
     fact = {
         "id": 1,
         "cae": cae,
@@ -834,7 +1070,10 @@ def test_modificar(db_mock, cur_mock, mocker, cae, fecha_vto, resultado, reproce
     ids = None
     conf_db = {"null": True}
 
-    mocker.patch("pyafipws.formatos.formato_sql.configurar", return_value=({'encabezado': 'encabezado'}, {"encabezado": {"id": "id"}}, {}))
+    mocker.patch(
+        "pyafipws.formatos.formato_sql.configurar",
+        return_value=({"encabezado": "encabezado"}, {"encabezado": {"id": "id"}}, {}),
+    )
 
     modificar(fact, db_mock, schema, webservice, ids, conf_db)
 
@@ -850,6 +1089,7 @@ def test_modificar(db_mock, cur_mock, mocker, cae, fecha_vto, resultado, reproce
             assert fact[k] == NULL
 
     cur_mock.execute.assert_called_once()
+
 
 @pytest.mark.dontusefix
 def test_modificar_exception(db_mock, cur_mock, mocker):
@@ -869,18 +1109,25 @@ def test_modificar_exception(db_mock, cur_mock, mocker):
     ids = None
     conf_db = {"null": True}
 
-    mocker.patch("pyafipws.formatos.formato_sql.configurar", return_value=({'encabezado': 'encabezado'}, {"encabezado": {"id": "id"}}, {}))
-    mocker.patch("pyafipws.formatos.formato_sql.ejecutar", side_effect=Exception("Database error"))
+    mocker.patch(
+        "pyafipws.formatos.formato_sql.configurar",
+        return_value=({"encabezado": "encabezado"}, {"encabezado": {"id": "id"}}, {}),
+    )
+    mocker.patch(
+        "pyafipws.formatos.formato_sql.ejecutar",
+        side_effect=Exception("Database error"),
+    )
 
     with pytest.raises(Exception) as exc_info:
         modificar(fact, db_mock, schema, webservice, ids, conf_db)
 
     assert str(exc_info.value) == "Database error"
-    
-    
+
+
 @pytest.fixture
 def db_mock():
     return MagicMock()
+
 
 @pytest.fixture
 def cur_mock(db_mock):
@@ -888,71 +1135,151 @@ def cur_mock(db_mock):
     db_mock.cursor.return_value = cur_mock
     return cur_mock
 
+
 @pytest.mark.dontusefix
-@pytest.mark.parametrize("kwargs, expected_query", [
-    ({}, "SELECT * FROM encabezado WHERE (resultado IS NULL OR resultado='' OR resultado=' ') AND (id IS NOT NULL) AND webservice=? ORDER BY tipo_cbte, punto_vta, cbte_nro"),
-    ({"campo": "valor"}, "SELECT * FROM encabezado"),
-])
+@pytest.mark.parametrize(
+    "kwargs, expected_query",
+    [
+        (
+            {},
+            "SELECT * FROM encabezado WHERE (resultado IS NULL OR resultado='' OR resultado=' ') AND (id IS NOT NULL) AND webservice=? ORDER BY tipo_cbte, punto_vta, cbte_nro",
+        ),
+        ({"campo": "valor"}, "SELECT * FROM encabezado"),
+    ],
+)
 def test_leer_query(db_mock, cur_mock, mocker, kwargs, expected_query):
     schema = {}
     webservice = "wsfev1"
     ids = None
     tablas = {"encabezado": "encabezado"}
-    campos = {"encabezado": {"id": "id", "resultado": "resultado", "webservice": "webservice", "tipo_cbte": "tipo_cbte", "punto_vta": "punto_vta", "cbte_nro": "cbte_nro"}}
-    campos_rev = {"encabezado": {"id": "id", "resultado": "resultado", "webservice": "webservice", "tipo_cbte": "tipo_cbte", "punto_vta": "punto_vta", "cbte_nro": "cbte_nro"}}
-    mocker.patch("pyafipws.formatos.formato_sql.configurar", return_value=(tablas, campos, campos_rev))
+    campos = {
+        "encabezado": {
+            "id": "id",
+            "resultado": "resultado",
+            "webservice": "webservice",
+            "tipo_cbte": "tipo_cbte",
+            "punto_vta": "punto_vta",
+            "cbte_nro": "cbte_nro",
+        }
+    }
+    campos_rev = {
+        "encabezado": {
+            "id": "id",
+            "resultado": "resultado",
+            "webservice": "webservice",
+            "tipo_cbte": "tipo_cbte",
+            "punto_vta": "punto_vta",
+            "cbte_nro": "cbte_nro",
+        }
+    }
+    mocker.patch(
+        "pyafipws.formatos.formato_sql.configurar",
+        return_value=(tablas, campos, campos_rev),
+    )
     ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
     mocker.patch("pyafipws.formatos.formato_sql.redondear")
 
     list(leer(db_mock, schema, webservice, ids, **kwargs))
 
-    ejecutar_mock.assert_called_once_with(cur_mock, expected_query, [webservice] if not kwargs and not ids else ids)
+    ejecutar_mock.assert_called_once_with(
+        cur_mock, expected_query, [webservice] if not kwargs and not ids else ids
+    )
+
 
 @pytest.mark.dontusefix
 def test_leer_fetchall(db_mock, cur_mock, mocker):
     schema = {}
     webservice = "wsfev1"
     ids = None
-    tablas = {"encabezado": "encabezado", "detalle": "detalle", "cmp_asoc": "cmp_asoc", "permiso": "permiso", "iva": "iva", "tributo": "tributo"}
+    tablas = {
+        "encabezado": "encabezado",
+        "detalle": "detalle",
+        "cmp_asoc": "cmp_asoc",
+        "permiso": "permiso",
+        "iva": "iva",
+        "tributo": "tributo",
+    }
     campos = {
-        "encabezado": {"id": "id", "resultado": "resultado", "webservice": "webservice", "tipo_cbte": "tipo_cbte", "punto_vta": "punto_vta", "cbte_nro": "cbte_nro"},
+        "encabezado": {
+            "id": "id",
+            "resultado": "resultado",
+            "webservice": "webservice",
+            "tipo_cbte": "tipo_cbte",
+            "punto_vta": "punto_vta",
+            "cbte_nro": "cbte_nro",
+        },
         "detalle": {"id": "id"},
         "cmp_asoc": {"id": "id"},
         "permiso": {"id": "id"},
         "iva": {"id": "id"},
-        "tributo": {"id": "id"}
+        "tributo": {"id": "id"},
     }
     campos_rev = {
-        "encabezado": {"id": "id", "resultado": "resultado", "webservice": "webservice", "tipo_cbte": "tipo_cbte", "punto_vta": "punto_vta", "cbte_nro": "cbte_nro"},
+        "encabezado": {
+            "id": "id",
+            "resultado": "resultado",
+            "webservice": "webservice",
+            "tipo_cbte": "tipo_cbte",
+            "punto_vta": "punto_vta",
+            "cbte_nro": "cbte_nro",
+        },
         "detalle": {"id": "id"},
         "cmp_asoc": {"id": "id"},
         "permiso": {"id": "id"},
         "iva": {"id": "id"},
-        "tributo": {"id": "id"}
+        "tributo": {"id": "id"},
     }
-    mocker.patch("pyafipws.formatos.formato_sql.configurar", return_value=(tablas, campos, campos_rev))
+    mocker.patch(
+        "pyafipws.formatos.formato_sql.configurar",
+        return_value=(tablas, campos, campos_rev),
+    )
     ejecutar_mock = mocker.patch("pyafipws.formatos.formato_sql.ejecutar")
-    redondear_mock = mocker.patch("pyafipws.formatos.formato_sql.redondear", side_effect=lambda formato, clave, valor: valor)
+    redondear_mock = mocker.patch(
+        "pyafipws.formatos.formato_sql.redondear",
+        side_effect=lambda formato, clave, valor: valor,
+    )
 
-    encabezado_data = [("1", "Resultado 1", "wsfev1", "1", "2", "3"), ("2", "Resultado 2", "wsfev1", "4", "5", "6")]
+    encabezado_data = [
+        ("1", "Resultado 1", "wsfev1", "1", "2", "3"),
+        ("2", "Resultado 2", "wsfev1", "4", "5", "6"),
+    ]
     detalle_data = [("1", "Detalle 1"), ("1", "Detalle 2"), ("2", "Detalle 3")]
     cmp_asoc_data = [("1",), ("2",)]
     permiso_data = [("1",), ("2",)]
     iva_data = [("1",), ("1",), ("2",)]
     tributo_data = [("1",), ("2",)]
 
-    cur_mock.fetchall.side_effect = [encabezado_data, detalle_data, cmp_asoc_data, permiso_data, iva_data, tributo_data, [], [], [], [], [], []]
+    cur_mock.fetchall.side_effect = [
+        encabezado_data,
+        detalle_data,
+        cmp_asoc_data,
+        permiso_data,
+        iva_data,
+        tributo_data,
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+    ]
     cur_mock.description = [
-        (("id",), ("resultado",), ("webservice",), ("tipo_cbte",), ("punto_vta",), ("cbte_nro",)),
+        (
+            ("id",),
+            ("resultado",),
+            ("webservice",),
+            ("tipo_cbte",),
+            ("punto_vta",),
+            ("cbte_nro",),
+        ),
         (("id",),),
         (("id",),),
         (("id",),),
         (("id",),),
-        (("id",),)
+        (("id",),),
     ]
 
     result = list(leer(db_mock, schema, webservice, ids))
-
 
     assert len(result) == 2
     assert result[0][("id",)] == "3"
@@ -980,36 +1307,38 @@ def test_leer_exception(db_mock, cur_mock, mocker):
     mocker.patch(
         "pyafipws.formatos.formato_sql.configurar",
         return_value=(
-            {'encabezado': 'encabezado'},
+            {"encabezado": "encabezado"},
             {
-                'encabezado': {
-                    'id': 'id',
-                    'resultado': 'resultado',
-                    'webservice': 'webservice',
-                    'tipo_cbte': 'tipo_cbte',
-                    'punto_vta': 'punto_vta',
-                    'cbte_nro': 'cbte_nro'
+                "encabezado": {
+                    "id": "id",
+                    "resultado": "resultado",
+                    "webservice": "webservice",
+                    "tipo_cbte": "tipo_cbte",
+                    "punto_vta": "punto_vta",
+                    "cbte_nro": "cbte_nro",
                 }
             },
             {
-                'encabezado': {
-                    'id': 'id',
-                    'resultado': 'resultado',
-                    'webservice': 'webservice',
-                    'tipo_cbte': 'tipo_cbte',
-                    'punto_vta': 'punto_vta',
-                    'cbte_nro': 'cbte_nro'
+                "encabezado": {
+                    "id": "id",
+                    "resultado": "resultado",
+                    "webservice": "webservice",
+                    "tipo_cbte": "tipo_cbte",
+                    "punto_vta": "punto_vta",
+                    "cbte_nro": "cbte_nro",
                 }
-            }
-        )
+            },
+        ),
     )
-    mocker.patch("pyafipws.formatos.formato_sql.ejecutar", side_effect=Exception("Database error"))
+    mocker.patch(
+        "pyafipws.formatos.formato_sql.ejecutar",
+        side_effect=Exception("Database error"),
+    )
 
     with pytest.raises(Exception) as exc_info:
         list(leer(db_mock, schema, webservice, ids))
 
     assert str(exc_info.value) == "Database error"
-
 
 
 @pytest.mark.dontusefix
@@ -1051,7 +1380,9 @@ def test_ayuda_output(capsys):
 @pytest.mark.dontusefix
 def test_ayuda_exception_handling(capsys):
     # Test handling of KeyboardInterrupt exception
-    with patch("pyafipws.formatos.formato_sql.esquema_sql", side_effect=KeyboardInterrupt):
+    with patch(
+        "pyafipws.formatos.formato_sql.esquema_sql", side_effect=KeyboardInterrupt
+    ):
         try:
             ayuda()
         except KeyboardInterrupt:
@@ -1061,7 +1392,10 @@ def test_ayuda_exception_handling(capsys):
     assert "-- Esquema:" in captured.out
 
     # Test handling of generic exception
-    with patch("pyafipws.formatos.formato_sql.esquema_sql", side_effect=Exception("Test Exception")):
+    with patch(
+        "pyafipws.formatos.formato_sql.esquema_sql",
+        side_effect=Exception("Test Exception"),
+    ):
         ayuda()
     captured = capsys.readouterr()
     assert "-- Formato:" in captured.out
@@ -1069,9 +1403,11 @@ def test_ayuda_exception_handling(capsys):
     assert "Error al generar esquema SQL: Test Exception" in captured.out
 
     # Test handling of generic exception
-    with patch("pyafipws.formatos.formato_sql.esquema_sql", side_effect=Exception("Test Exception")):
+    with patch(
+        "pyafipws.formatos.formato_sql.esquema_sql",
+        side_effect=Exception("Test Exception"),
+    ):
         ayuda()
     captured = capsys.readouterr()
     assert "-- Formato:" in captured.out
     assert "-- Esquema:" in captured.out
-
