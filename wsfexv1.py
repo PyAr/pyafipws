@@ -9,7 +9,7 @@
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
 # for more details.
-
+ 
 """Módulo para obtener CAE, código de autorización de impresión o electrónico, 
 del web service WSFEXv1 de AFIP (Factura Electrónica Exportación Versión 1)
 según RG2758/2010 (Registros Especiales Aduaneros) y RG3689/14 (servicios)
@@ -767,56 +767,43 @@ class WSFEXv1(BaseWS):
         res = ret["FEXGetPARAM_PtoVentaResult"].get("FEXResultGet")
         ret = []
         for pu in res:
-            p = pu["ClsFEXResponse_PtoVenta"]
-            try:
-                r = {
-                    "nro": p.get("Pve_Nro"),
-                    "baja": p.get("Pve_FchBaj"),
-                    "bloqueado": p.get("Pve_Bloqueado"),
-                }
-            except Exception as e:
-                print(e)
-            ret.append(r)
+            p = pu.get("ClsFEXResponse_PtoVenta", {})
+            r = {
+            "nro": p.get("Pve_Nro", ""),
+            "baja": p.get("Pve_FchBaj", ""),
+            "bloqueado": p.get("Pve_Bloqueado", ""),
+            }
+            result.append(r)
         return [
-            ("%(nro)s\tBloqueado:%(bloqueado)s\tFchBaja:%(baja)s" % r).replace(
-                "\t", sep
-            )
-            for r in ret
-        ]
+        ("%(nro)s\tBloqueado:%(bloqueado)s\tFchBaja:%(baja)s" % r).replace("\t", sep)
+        for r in result
+    ]
 
     @inicializar_y_capturar_excepciones
-    def GetParamActividades(self, sep="|"):
-        "Recuperar lista de valores referenciales de códigos de Idiomas"
-        ret = self.client.FEXGetPARAM_Actividades(
-            Auth={
-                "Token": self.Token,
-                "Sign": self.Sign,
-                "Cuit": self.Cuit,
-            }
+    def GetParamPtosVenta(self, sep="|"):
+        "Recupera el listado de los puntos de venta para exportacion y estado"
+        ret = self.client.FEXGetPARAM_PtoVenta(
+            Auth={"Token": self.Token, "Sign": self.Sign, "Cuit": self.Cuit},
         )
-        result = ret["FEXGetPARAM_ActividadesResult"]
-        self.__analizar_errores(result)
+        self.__analizar_errores(ret["FEXGetPARAM_PtoVentaResult"])
+        res = ret["FEXGetPARAM_PtoVentaResult"].get("FEXResultGet")
+        if not res:  # Check if FEXResultGet is None or empty
+            return []
 
-        ret = []
-        for u in result.get("FEXResultGet", []):
-            u = u["ClsFEXResponse_ActividadTipo"]
-            try:
-                r = {
-                    "codigo": u.get("Id"),
-                    "ds": u.get("Desc"),
-                    "orden": u.get("Orden"),
-                }
-            except Exception as e:
-                print(e)
+        result = []
+        for pu in res:
+            p = pu.get("ClsFEXResponse_PtoVenta", {})
+            r = {
+            "nro": p.get("Pve_Nro", ""),
+            "baja": p.get("Pve_FchBaj", ""),
+            "bloqueado": p.get("Pve_Bloqueado", ""),
+            }
+            result.append(r)
 
-            ret.append(r)
-        if sep:
-            return [
-                ("\t%(codigo)s\t%(ds)s\t%(orden)s\t" % it).replace("\t", sep)
-                for it in ret
-            ]
-        else:
-            return ret
+        return [
+            ("%(nro)s\tBloqueado:%(bloqueado)s\tFchBaja:%(baja)s" % r).replace("\t", sep)
+            for r in result
+        ]
 
 
 class WSFEX(WSFEXv1):
